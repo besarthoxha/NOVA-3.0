@@ -1,14 +1,14 @@
 
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/ADMIN/Downloads/index_20.html -->
-<html lang="sq"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Nova">
 <meta name="theme-color" content="#060e1e">
 <title>Nova 3.0 — BOLD</title>
-<link href="./Nova 3.0 — BOLD_files/css2" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#060e1e;--surface:#0a1628;--surface2:#0f1f3d;
@@ -101,7 +101,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </head>
 <body>
 
-<div id="login" style="display: flex;">
+<div id="login">
   <div class="login-brand">BOLD Consulting</div>
   <div class="login-title">NOV<span>A</span> <span style="font-size:14px;color:var(--text3)">3.0</span></div>
   <div class="login-sub">Sistemi i Brendshem</div>
@@ -126,24 +126,25 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div id="hdr-actions">
       <input type="file" id="file-inp" accept=".xlsx,.xls,.pdf,.txt,.csv,.docx" style="display:none" onchange="uploadFile(this)">
-      <button class="hbtn" onclick="document.getElementById(&#39;file-inp&#39;).click()">📎 ngarko</button>
-      <button class="hbtn" onclick="clearChat()">⟳ reset</button>
-      <button class="hbtn danger" onclick="doLogout()">← dil</button>
+      <button class="hbtn" onclick="document.getElementById('file-inp').click()">&#128206; ngarko</button>
+      <button class="hbtn" onclick="clearChat()">&#10227; reset</button>
+      <button class="hbtn danger" onclick="doLogout()">&#8592; dil</button>
     </div>
   </div>
   <div id="mbar"><span id="mtags" style="font-size:10px;font-family:monospace;color:var(--text3)">mem://empty</span></div>
   <div id="msgs"></div>
-  <div id="vstatus">● duke degjuar...</div>
+  <div id="vstatus">&#9679; duke degjuar...</div>
   <div id="qrow">
-    <button class="qb" onclick="sq(&#39;Cfare detyra kemi kete jave?&#39;)">detyrat</button>
-    <button class="qb" onclick="sq(&#39;Cfare deadline tatimore kemi?&#39;)">deadlines</button>
-    <button class="qb" onclick="sq(&#39;Bej nje raport per klientat&#39;)">raport</button>
-    <button class="qb" onclick="sq(&#39;Cfare di per mua?&#39;)">memoria</button>
+    <button class="qb" onclick="sq('Cfare detyra kemi kete jave?')">detyrat</button>
+    <button class="qb" onclick="sq('Cfare deadline tatimore kemi?')">deadlines</button>
+    <button class="qb" onclick="sq('Bej nje raport per klientat')">raport</button>
+    <button class="qb" onclick="manualExcel()">📊 excel</button>
+    <button class="qb" onclick="sq('Cfare di per mua?')">memoria</button>
   </div>
   <div id="iarea">
     <textarea id="inp" placeholder="Shkruaj..." rows="1"></textarea>
-    <button class="ibtn" id="mic-btn" onclick="toggleVoice()">🎤</button>
-    <button class="ibtn" id="send-btn" onclick="go()">➤</button>
+    <button class="ibtn" id="mic-btn" onclick="toggleVoice()">&#127908;</button>
+    <button class="ibtn" id="send-btn" onclick="go()">&#10148;</button>
   </div>
 </div>
 
@@ -382,6 +383,72 @@ async function uploadFile(input) {
 }
 
 function sq(t){inpEl.value=t;go();}
+
+async function manualExcel() {
+  const what = prompt('Cfare don ne Excel?', 'Lista e klientave me deadlines tatimore per qershor');
+  if(!what) return;
+  const title = prompt('Titulli:', 'BOLD - Deklarime Tatimore Qershor 2026') || 'Dokument BOLD';
+  
+  addMsg('user', 'Krijo Excel: ' + what);
+  showTyp();
+  
+  try {
+    // Kerkoje Noves te gjeneroje permbajtjen si JSON
+    const systemPrompt = `Gjenero VETEM nje JSON objekt per Excel. Format SAKTESISHT:
+{"headers":["Kolona1","Kolona2"],"rows":[["vlera1","vlera2"],...],"title":"titulli"}
+Asnje tekst tjeter, vetem JSON.`;
+
+    const chatRes = await fetch('/chat', {
+      method:'POST', headers: authHeaders(),
+      body: JSON.stringify({
+        messages: [{role:'user', content: systemPrompt + '
+
+Krijo Excel per: ' + what + '. Titulli: ' + title}],
+        memory: mem
+      })
+    });
+    const chatData = await chatRes.json();
+    let reply = chatData.reply || '';
+    
+    remTyp();
+    
+    // Parse JSON
+    let body = {title, subtitle: new Date().toLocaleDateString('sq'), headers:[], rows:[]};
+    try {
+      const clean = reply.replace(/```json|```/g,'').trim();
+      const parsed = JSON.parse(clean);
+      body.headers = parsed.headers || [];
+      body.rows = parsed.rows || [];
+      body.title = parsed.title || title;
+    } catch(e) {
+      // Fallback nese nuk eshte JSON
+      body.headers = ['Permbajtja'];
+      body.rows = reply.split('\n').filter(l=>l.trim()).map(l=>[l]);
+    }
+    
+    addMsg('nova', 'Duke gjeneruar Excel...');
+    
+    const res = await fetch('/generate/excel', {
+      method:'POST', headers: authHeaders(),
+      body: JSON.stringify(body)
+    });
+    
+    if(!res.ok) throw new Error('Export deshtoi');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url;
+    a.download = title + '.xlsx';
+    a.click(); URL.revokeObjectURL(url);
+    
+    const msgs = msgsEl.querySelectorAll('.msg.n');
+    const last = msgs[msgs.length-1];
+    if(last && last.querySelector('.bbl').textContent.includes('Duke gjeneruar')) last.remove();
+    addMsg('nova', title + '.xlsx u shkarkua.');
+  } catch(e) {
+    remTyp();
+    addMsg('nova', 'Problem: ' + e.message);
+  }
+}
 inpEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();go();}});
 inpEl.addEventListener('input',()=>{inpEl.style.height='auto';inpEl.style.height=Math.min(inpEl.scrollHeight,100)+'px';});
 
@@ -404,6 +471,5 @@ function stopListening(){
   if(recognition){try{recognition.stop();}catch(e){}}
 }
 </script>
-
-
-</body></html>
+</body>
+</html>
