@@ -4,7 +4,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, List, Any
-import anthropic
 import os
 import json
 import asyncpg
@@ -205,22 +204,26 @@ async def chat(req: ChatRequest, request: Request):
         system += f"\n\nMEMORY:\n{json.dumps(req.memory, ensure_ascii=False, indent=2)}"
     
     client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_KEY'))
-    
-    response = client.messages.create(
-        model="claude-sonnet-4-5",
-        max_tokens=2000,
-        system=system,
-        tools=[{"type": "web_search_20250305", "name": "web_search"}],
-        messages=req.messages
-    )
-    
-    reply = "".join(b.text for b in response.content if b.type == "text")
-    
-    return {
-        "reply": reply,
-        "content": [{"type": b.type, "text": getattr(b, 'text', '')} for b in response.content]
+    import httpx
+    api_key = os.environ.get('ANTHROPIC_KEY', '')
+    payload = {
+        "model": "claude-sonnet-4-5",
+        "max_tokens": 2000,
+        "system": system,
+        "tools": [{"type": "web_search_20250305", "name": "web_search"}],
+        "messages": req.messages
     }
-
+    async with httpx.AsyncClient(timeout=60) as http:
+        res = await http.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={"Content-Type":"application/json","x-api-key":api_key,"anthropic-version":"2023-06-01"},
+            json=payload
+        )
+    data = res.json()
+    if "error" in data:
+        raise HTTPException(500, str(data["error"]))
+    reply = "".join(b.get("text","") for b in data.get("content",[]) if b.get("type")=="text")
+    return {"reply": reply, "content": data.get("content", [])}
 # ─── MEMORY ─────────────────────────────────────────────
 @app.get("/memory")
 async def get_memory(request: Request):
