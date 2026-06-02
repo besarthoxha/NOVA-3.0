@@ -4,26 +4,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Nova">
 <meta name="theme-color" content="#060e1e">
 <title>Nova 3.0 — BOLD</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#060e1e;--surface:#0a1628;--surface2:#0f1f3d;
-  --border:rgba(212,175,55,0.12);--border2:rgba(212,175,55,0.28);
-  --gold:#d4af37;--gold2:#f0d060;--glow:rgba(212,175,55,0.1);
-  --text:#e8edf5;--text2:#a0aec0;--text3:#4a5568;
-  --user-bg:#0f2547;--user-border:rgba(212,175,55,0.3);
-  --green:#10b981;--red:#ef4444;
-}
+:root{--bg:#060e1e;--surface:#0a1628;--surface2:#0f1f3d;--border:rgba(212,175,55,0.12);--border2:rgba(212,175,55,0.28);--gold:#d4af37;--gold2:#f0d060;--glow:rgba(212,175,55,0.1);--text:#e8edf5;--text2:#a0aec0;--text3:#4a5568;--user-bg:#0f2547;--user-border:rgba(212,175,55,0.3);--green:#10b981;--red:#ef4444;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(212,175,55,0.04) 0%,transparent 60%);pointer-events:none}
-
-/* LOGIN */
-#login{width:400px;background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;padding:40px 36px;display:flex;flex-direction:column;gap:22px;position:relative;box-shadow:0 0 60px rgba(212,175,55,0.06),0 20px 60px rgba(0,0,0,0.5)}
+#login{width:400px;background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;padding:40px 36px;display:flex;flex-direction:column;gap:22px;position:relative;box-shadow:0 0 60px rgba(212,175,55,0.06)}
 #login::before{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
 .login-brand{font-size:11px;font-family:'DM Mono',monospace;color:var(--gold);letter-spacing:.25em;text-align:center}
 .login-title{font-size:32px;font-weight:700;letter-spacing:.08em;text-align:center}
@@ -36,13 +28,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .l-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:8px;color:#0a1628;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.08em;transition:all .2s;text-transform:uppercase}
 .l-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(212,175,55,0.3)}
 .l-err{font-family:'DM Mono',monospace;font-size:11px;color:var(--red);text-align:center;display:none;padding:8px;background:rgba(239,68,68,0.08);border-radius:6px;border:0.5px solid rgba(239,68,68,0.2)}
-
-/* APP */
-#app{display:none;width:560px;height:94vh;max-height:800px;flex-direction:column;background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 0 80px rgba(212,175,55,0.06),0 30px 80px rgba(0,0,0,0.6)}
+#app{display:none;width:560px;height:94vh;max-height:800px;flex-direction:column;background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 0 80px rgba(212,175,55,0.06)}
 #app::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);z-index:1}
-
 #hdr{padding:16px 20px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,var(--surface2),var(--surface));flex-shrink:0}
-#av{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:#0a1628;flex-shrink:0;box-shadow:0 2px 12px rgba(212,175,55,0.25)}
+#av{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:#0a1628;flex-shrink:0}
 #hdr-info{flex:1}
 #hname{font-size:15px;font-weight:600;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
 .badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;border-radius:4px;letter-spacing:.08em;text-transform:uppercase}
@@ -53,13 +42,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 #sdot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
 #hdr-actions{display:flex;gap:6px}
 .hbtn{font-size:10px;font-family:'DM Mono',monospace;padding:5px 10px;border-radius:6px;border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;transition:all .15s}
-.hbtn:hover{background:var(--glow);color:var(--gold);border-color:var(--border2)}
+.hbtn:hover{background:var(--glow);color:var(--gold)}
 .hbtn.danger:hover{background:rgba(239,68,68,0.1);color:var(--red);border-color:rgba(239,68,68,0.3)}
-
 #mbar{padding:10px 16px;border-bottom:0.5px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:44px;flex-shrink:0}
 .mcard{font-size:10px;font-family:'DM Mono',monospace;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--text2);border:0.5px solid var(--border);display:flex;align-items:center;gap:5px;white-space:nowrap}
 .mcard-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);opacity:.6}
-
 #msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
 #msgs::-webkit-scrollbar{width:3px}
 #msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
@@ -70,29 +57,26 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .bbl{padding:11px 15px;border-radius:14px;font-size:13.5px;line-height:1.65}
 .n .bbl{background:var(--surface2);border:0.5px solid var(--border);border-bottom-left-radius:4px;color:var(--text)}
 .u .bbl{background:var(--user-bg);border:0.5px solid var(--user-border);border-bottom-right-radius:4px;color:#c8d8f0}
-.mav{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:#0a1628;flex-shrink:0;align-self:flex-end;box-shadow:0 2px 8px rgba(212,175,55,0.2)}
+.mav{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:#0a1628;flex-shrink:0;align-self:flex-end}
 .typing{display:flex;gap:4px;align-items:center;padding:14px 15px}
 .dt{width:5px;height:5px;border-radius:50%;background:var(--gold);opacity:.3;animation:bn 1.3s infinite}
 .dt:nth-child(2){animation-delay:.2s}.dt:nth-child(3){animation-delay:.4s}
 @keyframes bn{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-5px);opacity:1}}
-
 .dl-row{display:flex;gap:6px;padding:4px 0 4px 38px;flex-wrap:wrap;animation:fi .2s ease}
 .dl-btn{font-size:11px;font-family:'DM Mono',monospace;padding:5px 12px;border-radius:6px;border:0.5px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all .15s}
 .dl-btn:hover{background:var(--glow);color:var(--gold);border-color:rgba(212,175,55,0.4)}
-
 #qrow{padding:8px 16px 4px;display:flex;gap:6px;flex-wrap:wrap;border-top:0.5px solid var(--border);flex-shrink:0}
 .qb{font-size:11px;font-family:'DM Mono',monospace;padding:5px 12px;border-radius:20px;border:0.5px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;transition:all .15s}
 .qb:hover{background:var(--glow);color:var(--gold);border-color:rgba(212,175,55,0.35)}
-
 #iarea{padding:10px 16px 16px;display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
 #inp{flex:1;border:0.5px solid var(--border2);border-radius:10px;padding:11px 15px;font-size:13.5px;font-family:'Syne',sans-serif;background:var(--surface2);color:var(--text);resize:none;outline:none;line-height:1.5;max-height:100px;overflow-y:auto;transition:all .2s}
 #inp::placeholder{color:var(--text3)}
 #inp:focus{border-color:rgba(212,175,55,0.5);box-shadow:0 0 0 3px rgba(212,175,55,0.06)}
 .ibtn{width:38px;height:38px;border-radius:10px;border:0.5px solid var(--border2);background:var(--surface2);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .15s}
-.ibtn:hover{background:var(--glow);color:var(--gold);border-color:rgba(212,175,55,0.4)}
+.ibtn:hover{background:var(--glow);color:var(--gold)}
 #send-btn{background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;color:#0a1628}
 #send-btn:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(212,175,55,0.3)}
-#send-btn:disabled{opacity:.4;transform:none;box-shadow:none;cursor:not-allowed}
+#send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 #mic-btn.listening{background:rgba(239,68,68,0.15);border-color:var(--red);color:var(--red);animation:pulse 1.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.3)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
 #vstatus{display:none;padding:5px 16px;font-family:'DM Mono',monospace;font-size:10px;color:var(--red);border-top:0.5px solid var(--border);text-align:center;flex-shrink:0}
@@ -100,23 +84,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </style>
 </head>
 <body>
-
 <div id="login">
   <div class="login-brand">BOLD Consulting</div>
-  <div class="login-title">NOV<span>A</span> <span style="font-size:14px;color:var(--text3)">3.0</span></div>
+  <div class="login-title">NOV<span>A</span></div>
   <div class="login-sub">Sistemi i Brendshem</div>
-  <div>
-    <div class="l-label">Username</div>
-    <input class="l-inp" id="l-user" type="text" placeholder="besart" autocomplete="username" spellcheck="false">
-  </div>
-  <div>
-    <div class="l-label">Fjalëkalimi</div>
-    <input class="l-inp" id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password">
-  </div>
+  <div><div class="l-label">Username</div><input class="l-inp" id="l-user" type="text" placeholder="besart" autocomplete="username" spellcheck="false"></div>
+  <div><div class="l-label">Fjalekalimi</div><input class="l-inp" id="l-pass" type="password" placeholder="00000000" autocomplete="current-password"></div>
   <div class="l-err" id="l-err"></div>
   <button class="l-btn" onclick="doLogin()">Hyrje</button>
 </div>
-
 <div id="app">
   <div id="hdr">
     <div id="av">N</div>
@@ -126,19 +102,19 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div id="hdr-actions">
       <input type="file" id="file-inp" accept=".xlsx,.xls,.pdf,.txt,.csv,.docx" style="display:none" onchange="uploadFile(this)">
-      <button class="hbtn" onclick="document.getElementById('file-inp').click()">&#128206; ngarko</button>
-      <button class="hbtn" onclick="clearChat()">&#10227; reset</button>
-      <button class="hbtn danger" onclick="doLogout()">&#8592; dil</button>
+      <button class="hbtn" onclick="document.getElementById('file-inp').click()">ngarko</button>
+      <button class="hbtn" onclick="clearChat()">reset</button>
+      <button class="hbtn danger" onclick="doLogout()">dil</button>
     </div>
   </div>
   <div id="mbar"><span id="mtags" style="font-size:10px;font-family:monospace;color:var(--text3)">mem://empty</span></div>
   <div id="msgs"></div>
-  <div id="vstatus">&#9679; duke degjuar...</div>
+  <div id="vstatus">duke degjuar...</div>
   <div id="qrow">
     <button class="qb" onclick="sq('Cfare detyra kemi kete jave?')">detyrat</button>
     <button class="qb" onclick="sq('Cfare deadline tatimore kemi?')">deadlines</button>
     <button class="qb" onclick="sq('Bej nje raport per klientat')">raport</button>
-    <button class="qb" onclick="manualExcel()">📊 excel</button>
+    <button class="qb" onclick="makeExcel()">excel</button>
     <button class="qb" onclick="sq('Cfare di per mua?')">memoria</button>
   </div>
   <div id="iarea">
@@ -147,99 +123,93 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="ibtn" id="send-btn" onclick="go()">&#10148;</button>
   </div>
 </div>
-
 <script>
-let token = localStorage.getItem('nova_token');
-let currentUser = null;
-let mem = {notes:[],clients:[],family:[]};
-let hist = [];
-let busy = false;
-let recognition = null;
-let isListening = false;
-
-const msgsEl = document.getElementById('msgs');
-const inpEl = document.getElementById('inp');
-const sbEl = document.getElementById('send-btn');
+var token = localStorage.getItem('nova_token');
+var currentUser = null;
+var mem = {notes:[],clients:[],family:[]};
+var hist = [];
+var busy = false;
+var recognition = null;
+var isListening = false;
+var msgsEl = document.getElementById('msgs');
+var inpEl = document.getElementById('inp');
+var sbEl = document.getElementById('send-btn');
 
 function authHeaders() {
-  return {'Content-Type':'application/json', 'Authorization': 'Bearer ' + token};
+  return {'Content-Type':'application/json','Authorization':'Bearer '+token};
 }
 
-window.addEventListener('load', async () => {
+window.addEventListener('load', function() {
   if (token) {
-    try {
-      const res = await fetch('/memory', {headers: authHeaders()});
-      if (res.ok) {
-        const user = JSON.parse(atob(token.split('.')[0] || '') || '{}');
-        // Token valid — load app
-        await loadApp();
-        return;
-      }
-    } catch(e) {}
+    fetch('/memory', {headers: authHeaders()})
+      .then(function(r) {
+        if (r.ok) { loadApp(); }
+        else { showLogin(); }
+      })
+      .catch(function() { showLogin(); });
+  } else {
+    showLogin();
   }
-  document.getElementById('login').style.display = 'flex';
-  initVoice();
 });
 
-document.getElementById('l-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-
-async function doLogin() {
-  const username = document.getElementById('l-user').value.trim().toLowerCase();
-  const password = document.getElementById('l-pass').value;
-  const errEl = document.getElementById('l-err');
-  errEl.style.display = 'none';
-  
-  try {
-    const res = await fetch('/login', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({username, password})
-    });
-    const data = await res.json();
-    if (!res.ok) { errEl.textContent = data.detail || 'Gabim'; errEl.style.display='block'; return; }
-    token = data.token;
-    currentUser = data.user;
-    localStorage.setItem('nova_token', token);
-    document.getElementById('login').style.display = 'none';
-    await loadApp();
-  } catch(e) {
-    errEl.textContent = 'Problem lidhjeje'; errEl.style.display='block';
-  }
+function showLogin() {
+  document.getElementById('login').style.display = 'flex';
+  initVoice();
 }
 
-async function loadApp() {
-  // Load user info from token if not set
-  if (!currentUser) {
-    // Try to get from a test call
-    try {
-      const r = await fetch('/memory', {headers: authHeaders()});
-      if (!r.ok) { localStorage.removeItem('nova_token'); location.reload(); return; }
-    } catch(e) { localStorage.removeItem('nova_token'); location.reload(); return; }
-  }
-  
-  try { const r=await fetch('/memory',{headers:authHeaders()}); if(r.ok) mem=await r.json(); } catch(e){}
-  try { const r=await fetch('/history',{headers:authHeaders()}); if(r.ok) { const d=await r.json(); hist=d.map(m=>({role:m.role,content:m.content})); }} catch(e){}
-  
+document.getElementById('l-pass').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+function doLogin() {
+  var username = document.getElementById('l-user').value.trim().toLowerCase();
+  var password = document.getElementById('l-pass').value;
+  var errEl = document.getElementById('l-err');
+  errEl.style.display = 'none';
+  fetch('/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({username: username, password: password})
+  })
+  .then(function(r) { return r.json().then(function(d) { return {ok: r.ok, data: d}; }); })
+  .then(function(rd) {
+    if (!rd.ok) { errEl.textContent = rd.data.detail || 'Gabim'; errEl.style.display = 'block'; return; }
+    token = rd.data.token;
+    currentUser = rd.data.user;
+    localStorage.setItem('nova_token', token);
+    document.getElementById('login').style.display = 'none';
+    loadApp();
+  })
+  .catch(function() { errEl.textContent = 'Problem lidhjeje'; errEl.style.display = 'block'; });
+}
+
+function loadApp() {
+  fetch('/memory', {headers: authHeaders()})
+    .then(function(r) { return r.json(); })
+    .then(function(d) { if (d && !d.error) mem = d; })
+    .catch(function() {});
+  fetch('/history', {headers: authHeaders()})
+    .then(function(r) { return r.json(); })
+    .then(function(d) { if (d && d.length > 0) hist = d.map(function(m) { return {role: m.role, content: m.content}; }); })
+    .catch(function() {});
   if (currentUser) {
-    const role = currentUser.role;
-    const badge = document.getElementById('role-badge');
-    badge.textContent = role==='owner'?'BOLD':role==='partner'?'PARTNER':'STAFF';
-    badge.className = 'badge badge-'+role;
-    const name = currentUser.full_name.split(' ')[0];
-    document.getElementById('user-label').textContent = name + ' — BOLD Consulting';
+    var role = currentUser.role;
+    var badge = document.getElementById('role-badge');
+    badge.textContent = role === 'owner' ? 'BOLD' : role === 'partner' ? 'PARTNER' : 'STAFF';
+    badge.className = 'badge badge-' + role;
+    var name = currentUser.full_name.split(' ')[0];
+    document.getElementById('user-label').textContent = name + ' — BOLD';
   }
-  
   updMem();
   initVoice();
   document.getElementById('app').style.display = 'flex';
-  
-  const h = new Date().getHours();
-  const n = currentUser ? (currentUser.username==='besart'?'Zotëri Hoxha':currentUser.full_name.split(' ')[0]) : 'Boss';
-  addMsg('nova', h>=9&&h<17 ? n+', mirëdita. Gati për punë.' : n+', cka kemi?');
+  var h = new Date().getHours();
+  var n = currentUser ? (currentUser.username === 'besart' ? 'Zotëri Hoxha' : currentUser.full_name.split(' ')[0]) : 'Boss';
+  addMsg('nova', h >= 9 && h < 17 ? n + ', mirëdita. Gati për punë.' : n + ', cka kemi?');
   inpEl.focus();
 }
 
-async function doLogout() {
+function doLogout() {
   localStorage.removeItem('nova_token');
   token = null; currentUser = null; hist = []; mem = {notes:[],clients:[],family:[]};
   msgsEl.innerHTML = '';
@@ -251,222 +221,218 @@ async function doLogout() {
 function clearChat() {
   hist = []; msgsEl.innerHTML = '';
   fetch('/clear-history', {method:'POST', headers: authHeaders()});
-  const n = currentUser ? (currentUser.username==='besart'?'Boss':currentUser.full_name.split(' ')[0]) : 'Boss';
-  addMsg('nova', 'Bisede e re. Cka kemi, '+n+'?');
+  var n = currentUser ? (currentUser.username === 'besart' ? 'Boss' : currentUser.full_name.split(' ')[0]) : 'Boss';
+  addMsg('nova', 'Bisede e re. Cka kemi, ' + n + '?');
 }
 
 function updMem() {
-  const all = [...mem.notes, ...mem.clients.map(c=>c.name||String(c)), ...mem.family.map(f=>f.name||String(f))];
-  const el = document.getElementById('mtags');
-  el.innerHTML = all.length===0
-    ? '<span style="font-size:10px;font-family:monospace;color:var(--text3)">mem://empty</span>'
-    : all.slice(0,8).map(n=>`<span class="mcard"><span class="mcard-dot"></span>${String(n).slice(0,24)}</span>`).join('');
+  var all = mem.notes.concat(mem.clients.map(function(c) { return c.name || String(c); })).concat(mem.family.map(function(f) { return f.name || String(f); }));
+  var el = document.getElementById('mtags');
+  if (all.length === 0) {
+    el.innerHTML = '<span style="font-size:10px;font-family:monospace;color:var(--text3)">mem://empty</span>';
+  } else {
+    el.innerHTML = all.slice(0,8).map(function(n) { return '<span class="mcard"><span class="mcard-dot"></span>' + String(n).slice(0,24) + '</span>'; }).join('');
+  }
 }
 
-async function saveMem() {
-  try { await fetch('/memory',{method:'POST',headers:authHeaders(),body:JSON.stringify(mem)}); } catch(e){}
+function saveMem() {
+  fetch('/memory', {method:'POST', headers: authHeaders(), body: JSON.stringify(mem)});
 }
 
 function chkMem(text) {
-  if(/^mbaje mend/i.test(text)) {
-    const info = text.replace(/^mbaje mend\s*/i,'').trim();
-    if(info){mem.notes.push(info);updMem();saveMem();}
+  if (/^mbaje mend/i.test(text)) {
+    var info = text.replace(/^mbaje mend\s*/i, '').trim();
+    if (info) { mem.notes.push(info); updMem(); saveMem(); }
   }
 }
 
 function addMsg(role, text) {
-  const w=document.createElement('div'); w.className='msg '+(role==='user'?'u':'n');
-  if(role!=='user'){const a=document.createElement('div');a.className='mav';a.textContent='N';w.appendChild(a);}
-  const b=document.createElement('div');b.className='bbl';b.textContent=text;
-  w.appendChild(b);msgsEl.appendChild(w);msgsEl.scrollTop=msgsEl.scrollHeight;
+  var w = document.createElement('div'); w.className = 'msg ' + (role === 'user' ? 'u' : 'n');
+  if (role !== 'user') { var a = document.createElement('div'); a.className = 'mav'; a.textContent = 'N'; w.appendChild(a); }
+  var b = document.createElement('div'); b.className = 'bbl'; b.textContent = text;
+  w.appendChild(b); msgsEl.appendChild(w); msgsEl.scrollTop = msgsEl.scrollHeight;
 }
 
 function showTyp() {
-  const d=document.createElement('div');d.className='msg n';d.id='typ';
-  const a=document.createElement('div');a.className='mav';a.textContent='N';
-  const b=document.createElement('div');b.className='bbl typing';
-  b.innerHTML='<div class="dt"></div><div class="dt"></div><div class="dt"></div>';
-  d.appendChild(a);d.appendChild(b);msgsEl.appendChild(d);msgsEl.scrollTop=msgsEl.scrollHeight;
+  var d = document.createElement('div'); d.className = 'msg n'; d.id = 'typ';
+  var a = document.createElement('div'); a.className = 'mav'; a.textContent = 'N';
+  var b = document.createElement('div'); b.className = 'bbl typing';
+  b.innerHTML = '<div class="dt"></div><div class="dt"></div><div class="dt"></div>';
+  d.appendChild(a); d.appendChild(b); msgsEl.appendChild(d); msgsEl.scrollTop = msgsEl.scrollHeight;
 }
-function remTyp(){const t=document.getElementById('typ');if(t)t.remove();}
+
+function remTyp() { var t = document.getElementById('typ'); if (t) t.remove(); }
 
 function addDownloadButtons(replyText) {
-  const w=document.createElement('div');w.className='dl-row';
-  [['excel','📊'],['word','📝'],['pdf','📄']].forEach(([type,icon])=>{
-    const btn=document.createElement('button');btn.className='dl-btn';
-    btn.textContent=icon+' '+type;
-    btn.onclick=async()=>{ const title=prompt('Titulli:','Dokument BOLD')||'Dokument BOLD'; await downloadDoc(type,title,replyText); };
+  var w = document.createElement('div'); w.className = 'dl-row';
+  var types = [['excel','excel'],['word','word'],['pdf','pdf']];
+  types.forEach(function(tp) {
+    var type = tp[0];
+    var btn = document.createElement('button'); btn.className = 'dl-btn';
+    btn.textContent = type;
+    btn.onclick = function() {
+      var title = prompt('Titulli:', 'Dokument BOLD') || 'Dokument BOLD';
+      downloadDoc(type, title, replyText);
+    };
     w.appendChild(btn);
   });
-  msgsEl.appendChild(w);msgsEl.scrollTop=msgsEl.scrollHeight;
+  msgsEl.appendChild(w); msgsEl.scrollTop = msgsEl.scrollHeight;
 }
 
-async function downloadDoc(type, title, text) {
-  try {
-    addMsg('nova','Duke gjeneruar '+type+'...');
-    
-    let body = {title, subtitle: new Date().toLocaleDateString('sq'), headers:[], rows:[]};
-    
-    // Parse tabele nese ka
-    const lines = text.split('\n').filter(l=>l.includes('|'));
-    if(lines.length > 2) {
-      body.headers = lines[0].split('|').map(h=>h.trim()).filter(h=>h&&!h.match(/^-+$/));
-      body.rows = lines.slice(2).map(l=>l.split('|').map(c=>c.trim()).filter((_,i,a)=>i>0&&i<a.length-1));
-    } else {
-      body.headers = ['Permbajtja'];
-      body.rows = text.split('\n').filter(l=>l.trim()).map(l=>[l]);
-    }
-    
-    const endpoint = type==='excel' ? '/generate/excel' : '/export/'+type;
-    const res = await fetch(endpoint, {method:'POST', headers: authHeaders(), body: JSON.stringify(body)});
-    
-    if(!res.ok) throw new Error('Export deshtoi');
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');a.href=url;
-    a.download = title+'.'+(type==='excel'?'xlsx':type==='word'?'docx':'pdf');
-    a.click();URL.revokeObjectURL(url);
-    
-    const msgs=msgsEl.querySelectorAll('.msg.n');
-    const last=msgs[msgs.length-1];
-    if(last&&last.querySelector('.bbl').textContent.includes('Duke gjeneruar'))last.remove();
-    addMsg('nova',title+' u shkarkua.');
-  } catch(e){addMsg('nova','Problem: '+e.message);}
-}
-
-async function go() {
-  const text=inpEl.value.trim(); if(!text||busy) return;
-  inpEl.value='';inpEl.style.height='auto';
-  busy=true;sbEl.disabled=true;
-  addMsg('user',text);chkMem(text);
-  hist.push({role:'user',content:text});showTyp();
-  
-  try {
-    const res=await fetch('/chat',{
-      method:'POST',
-      headers: authHeaders(),
-      body:JSON.stringify({messages:hist, memory:mem})
+function downloadDoc(type, title, text) {
+  addMsg('nova', 'Duke gjeneruar ' + type + '...');
+  var body = {title: title, subtitle: new Date().toLocaleDateString('sq'), headers:[], rows:[]};
+  var lines = text.split('\n').filter(function(l) { return l.includes('|'); });
+  if (lines.length > 2) {
+    body.headers = lines[0].split('|').map(function(h) { return h.trim(); }).filter(function(h) { return h && !h.match(/^-+$/); });
+    body.rows = lines.slice(2).map(function(l) {
+      var cells = l.split('|').map(function(c) { return c.trim(); });
+      return cells.slice(1, cells.length - 1);
     });
-    const data=await res.json();
-    if(data.detail)throw new Error(data.detail);
-    const reply=data.reply||'';
-    remTyp();addMsg('nova',reply);
-    
-    const hasTable=reply.includes('|')&&reply.split('|').length>4;
-    const hasDoc=/raport|dokument|list[ae]|tabel[ae]|template/i.test(reply)&&reply.split('\n').length>6;
-    if(hasTable||hasDoc) addDownloadButtons(reply);
-    
-    hist.push({role:'assistant',content:reply});
-    fetch('/history',{method:'POST',headers:authHeaders(),body:JSON.stringify({role:'user',content:text})});
-    fetch('/history',{method:'POST',headers:authHeaders(),body:JSON.stringify({role:'assistant',content:reply})});
-  } catch(e){remTyp();addMsg('nova','Dicka shkoi keq: '+e.message);}
-  
-  busy=false;sbEl.disabled=false;
+  } else {
+    body.headers = ['Permbajtja'];
+    body.rows = text.split('\n').filter(function(l) { return l.trim(); }).map(function(l) { return [l]; });
+  }
+  var endpoint = type === 'excel' ? '/generate/excel' : '/export/' + type;
+  fetch(endpoint, {method:'POST', headers: authHeaders(), body: JSON.stringify(body)})
+    .then(function(r) {
+      if (!r.ok) throw new Error('Export deshtoi');
+      return r.blob();
+    })
+    .then(function(blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href = url;
+      var ext = type === 'excel' ? 'xlsx' : type === 'word' ? 'docx' : 'pdf';
+      a.download = title + '.' + ext; a.click(); URL.revokeObjectURL(url);
+      var msgs = msgsEl.querySelectorAll('.msg.n');
+      var last = msgs[msgs.length-1];
+      if (last && last.querySelector('.bbl').textContent.includes('Duke gjeneruar')) last.remove();
+      addMsg('nova', title + ' u shkarkua.');
+    })
+    .catch(function(e) { addMsg('nova', 'Problem: ' + e.message); });
 }
 
-async function uploadFile(input) {
-  const file=input.files[0];if(!file)return;
-  addMsg('user','Ngarkova: '+file.name);showTyp();
-  try {
-    const fd=new FormData();fd.append('file',file);
-    const res=await fetch('/upload',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
-    const data=await res.json();
-    if(data.error)throw new Error(data.error);
-    const prompt=`Ngarkova "${file.name}".\nPermbajtja:\n${data.content}\n\nAnalizo.`;
-    hist.push({role:'user',content:prompt});
-    const cr=await fetch('/chat',{method:'POST',headers:authHeaders(),body:JSON.stringify({messages:hist,memory:mem})});
-    const cd=await cr.json();
-    const reply=cd.reply||'';
-    remTyp();addMsg('nova',reply);hist.push({role:'assistant',content:reply});
-  } catch(e){remTyp();addMsg('nova','Problem: '+e.message);}
-  input.value='';
-}
-
-function sq(t){inpEl.value=t;go();}
-
-async function manualExcel() {
-  const what = prompt('Cfare don ne Excel?', 'Lista e klientave me deadlines tatimore per qershor');
-  if(!what) return;
-  const title = prompt('Titulli:', 'BOLD - Deklarime Tatimore Qershor 2026') || 'Dokument BOLD';
-  
+function makeExcel() {
+  var what = prompt('Cfare don ne Excel?', 'Lista e klientave me deadlines tatimore');
+  if (!what) return;
+  var title = prompt('Titulli:', 'BOLD Deklarime Qershor 2026') || 'BOLD Excel';
   addMsg('user', 'Krijo Excel: ' + what);
   showTyp();
-  
-  try {
-    // Kerkoje Noves te gjeneroje permbajtjen si JSON
-    const systemPrompt = 'Gjenero VETEM nje JSON objekt per Excel. Format SAKTESISHT: {"headers":["Kolona1","Kolona2"],"rows":[["vlera1","vlera2"]],"title":"titulli"} Asnje tekst tjeter, vetem JSON.';
-
-    const chatRes = await fetch('/chat', {
-      method:'POST', headers: authHeaders(),
-      body: JSON.stringify({
-        messages: [{role:'user', content: systemPrompt + '
-
-Krijo Excel per: ' + what + '. Titulli: ' + title}],
-        memory: mem
-      })
-    });
-    const chatData = await chatRes.json();
-    let reply = chatData.reply || '';
-    
+  var systemMsg = 'Gjenero VETEM JSON per Excel pa asnje tekst tjeter. Format: {"headers":["Kolona1","Kolona2"],"rows":[["v1","v2"]],"title":"titulli"}';
+  var userMsg = systemMsg + ' Krijo per: ' + what + '. Titulli: ' + title;
+  fetch('/chat', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({messages: [{role:'user', content: userMsg}], memory: mem})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var reply = d.reply || '';
     remTyp();
-    
-    // Parse JSON
-    let body = {title, subtitle: new Date().toLocaleDateString('sq'), headers:[], rows:[]};
+    var body = {title: title, subtitle: new Date().toLocaleDateString('sq'), headers:[], rows:[]};
     try {
-      const clean = reply.replace(/```json|```/g,'').trim();
-      const parsed = JSON.parse(clean);
+      var clean = reply.replace(/```json/g,'').replace(/```/g,'').trim();
+      var parsed = JSON.parse(clean);
       body.headers = parsed.headers || [];
       body.rows = parsed.rows || [];
       body.title = parsed.title || title;
     } catch(e) {
-      // Fallback nese nuk eshte JSON
       body.headers = ['Permbajtja'];
-      body.rows = reply.split('\n').filter(l=>l.trim()).map(l=>[l]);
+      body.rows = reply.split('\n').filter(function(l) { return l.trim(); }).map(function(l) { return [l]; });
     }
-    
     addMsg('nova', 'Duke gjeneruar Excel...');
-    
-    const res = await fetch('/generate/excel', {
-      method:'POST', headers: authHeaders(),
-      body: JSON.stringify(body)
-    });
-    
-    if(!res.ok) throw new Error('Export deshtoi');
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href=url;
-    a.download = title + '.xlsx';
-    a.click(); URL.revokeObjectURL(url);
-    
-    const msgs = msgsEl.querySelectorAll('.msg.n');
-    const last = msgs[msgs.length-1];
-    if(last && last.querySelector('.bbl').textContent.includes('Duke gjeneruar')) last.remove();
+    return fetch('/generate/excel', {method:'POST', headers: authHeaders(), body: JSON.stringify(body)});
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('Export deshtoi');
+    return r.blob();
+  })
+  .then(function(blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = title + '.xlsx'; a.click(); URL.revokeObjectURL(url);
+    var msgs = msgsEl.querySelectorAll('.msg.n');
+    var last = msgs[msgs.length-1];
+    if (last && last.querySelector('.bbl').textContent.includes('Duke gjeneruar')) last.remove();
     addMsg('nova', title + '.xlsx u shkarkua.');
-  } catch(e) {
-    remTyp();
-    addMsg('nova', 'Problem: ' + e.message);
-  }
+  })
+  .catch(function(e) { remTyp(); addMsg('nova', 'Problem: ' + e.message); });
 }
-inpEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();go();}});
-inpEl.addEventListener('input',()=>{inpEl.style.height='auto';inpEl.style.height=Math.min(inpEl.scrollHeight,100)+'px';});
 
-function initVoice(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){document.getElementById('mic-btn').style.display='none';return;}
-  recognition=new SR();recognition.lang='sq-AL';recognition.continuous=false;recognition.interimResults=false;
-  recognition.onresult=e=>{inpEl.value=e.results[0][0].transcript;stopListening();go();};
-  recognition.onerror=()=>stopListening();recognition.onend=()=>stopListening();
+function go() {
+  var text = inpEl.value.trim(); if (!text || busy) return;
+  inpEl.value = ''; inpEl.style.height = 'auto';
+  busy = true; sbEl.disabled = true;
+  addMsg('user', text); chkMem(text);
+  hist.push({role:'user', content: text}); showTyp();
+  fetch('/chat', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({messages: hist, memory: mem})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.detail) throw new Error(d.detail);
+    var reply = d.reply || '';
+    remTyp(); addMsg('nova', reply);
+    var hasTable = reply.includes('|') && reply.split('|').length > 4;
+    var hasDoc = /raport|dokument|liste|tabele|template/i.test(reply) && reply.split('\n').length > 6;
+    if (hasTable || hasDoc) addDownloadButtons(reply);
+    hist.push({role:'assistant', content: reply});
+    fetch('/history', {method:'POST', headers: authHeaders(), body: JSON.stringify({role:'user', content: text})});
+    fetch('/history', {method:'POST', headers: authHeaders(), body: JSON.stringify({role:'assistant', content: reply})});
+  })
+  .catch(function(e) { remTyp(); addMsg('nova', 'Dicka shkoi keq: ' + e.message); });
+  busy = false; sbEl.disabled = false;
 }
-function toggleVoice(){
-  if(isListening){stopListening();return;}
-  isListening=true;document.getElementById('mic-btn').classList.add('listening');
-  document.getElementById('vstatus').style.display='block';
-  if(recognition)recognition.start();
+
+function uploadFile(input) {
+  var file = input.files[0]; if (!file) return;
+  addMsg('user', 'Ngarkova: ' + file.name); showTyp();
+  var fd = new FormData(); fd.append('file', file);
+  fetch('/upload', {method:'POST', headers: {'Authorization':'Bearer '+token}, body: fd})
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) throw new Error(d.error);
+      var prompt = 'Ngarkova "' + file.name + '". Permbajtja:\n' + d.content + '\n\nAnalizo dhe me trego cfare ka.';
+      hist.push({role:'user', content: prompt});
+      return fetch('/chat', {method:'POST', headers: authHeaders(), body: JSON.stringify({messages: hist, memory: mem})});
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var reply = d.reply || '';
+      remTyp(); addMsg('nova', reply); hist.push({role:'assistant', content: reply});
+    })
+    .catch(function(e) { remTyp(); addMsg('nova', 'Problem: ' + e.message); });
+  input.value = '';
 }
-function stopListening(){
-  isListening=false;document.getElementById('mic-btn').classList.remove('listening');
-  document.getElementById('vstatus').style.display='none';
-  if(recognition){try{recognition.stop();}catch(e){}}
+
+function sq(t) { inpEl.value = t; go(); }
+
+inpEl.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } });
+inpEl.addEventListener('input', function() { inpEl.style.height = 'auto'; inpEl.style.height = Math.min(inpEl.scrollHeight, 100) + 'px'; });
+
+function initVoice() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { document.getElementById('mic-btn').style.display = 'none'; return; }
+  recognition = new SR(); recognition.lang = 'sq-AL'; recognition.continuous = false; recognition.interimResults = false;
+  recognition.onresult = function(e) { inpEl.value = e.results[0][0].transcript; stopListening(); go(); };
+  recognition.onerror = function() { stopListening(); };
+  recognition.onend = function() { stopListening(); };
+}
+
+function toggleVoice() {
+  if (isListening) { stopListening(); return; }
+  isListening = true;
+  document.getElementById('mic-btn').classList.add('listening');
+  document.getElementById('vstatus').style.display = 'block';
+  if (recognition) recognition.start();
+}
+
+function stopListening() {
+  isListening = false;
+  document.getElementById('mic-btn').classList.remove('listening');
+  document.getElementById('vstatus').style.display = 'none';
+  if (recognition) { try { recognition.stop(); } catch(e) {} }
 }
 </script>
 </body>
