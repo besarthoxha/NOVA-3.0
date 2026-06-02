@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+anthropic
+asyncpg
+openpyxl
+PyPDF2
+python-docx
+reportlab
+python-multipart
