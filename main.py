@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, File
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
@@ -103,7 +103,8 @@ async def login(req: LoginRequest):
     
     return {"token": token, "user": {"username": user['username'], "full_name": user['full_name'], "role": user['role']}}
 
-async def get_user(authorization: str = None):
+async def get_user(request: Request):
+    authorization = request.headers.get('Authorization', '')
     if not authorization or not authorization.startswith('Bearer '):
         raise HTTPException(401, "Jo i autorizuar")
     token = authorization.replace('Bearer ', '')
@@ -185,7 +186,7 @@ class ChatRequest(BaseModel):
     memory: Optional[dict] = None
 
 @app.post("/chat")
-async def chat(req: ChatRequest, authorization: str = None):
+async def chat(req: ChatRequest, request: Request):
     # Get user from token
     if authorization and authorization.startswith('Bearer '):
         token = authorization.replace('Bearer ', '')
@@ -223,8 +224,8 @@ async def chat(req: ChatRequest, authorization: str = None):
 
 # ─── MEMORY ─────────────────────────────────────────────
 @app.get("/memory")
-async def get_memory(authorization: str = None):
-    user = await get_user(authorization)
+async def get_memory(request: Request):
+    user = await get_user(request)
     conn = await get_db()
     row = await conn.fetchrow('SELECT data FROM memory WHERE user_id=$1', user['username'])
     await conn.close()
@@ -233,8 +234,8 @@ async def get_memory(authorization: str = None):
     return {"notes": [], "clients": [], "family": []}
 
 @app.post("/memory")
-async def save_memory(data: dict, authorization: str = None):
-    user = await get_user(authorization)
+async def save_memory(data: dict, request: Request):
+    user = await get_user(request)
     conn = await get_db()
     await conn.execute('''
         INSERT INTO memory (user_id, data) VALUES ($1, $2)
@@ -245,8 +246,8 @@ async def save_memory(data: dict, authorization: str = None):
 
 # ─── HISTORY ─────────────────────────────────────────────
 @app.get("/history")
-async def get_history(authorization: str = None):
-    user = await get_user(authorization)
+async def get_history(request: Request):
+    user = await get_user(request)
     conn = await get_db()
     rows = await conn.fetch('''
         SELECT role, content FROM history WHERE user_id=$1
@@ -256,8 +257,8 @@ async def get_history(authorization: str = None):
     return [{"role": r['role'], "content": r['content']} for r in reversed(rows)]
 
 @app.post("/history")
-async def save_history(data: dict, authorization: str = None):
-    user = await get_user(authorization)
+async def save_history(data: dict, request: Request):
+    user = await get_user(request)
     conn = await get_db()
     content = data.get('content', '')
     if isinstance(content, list):
@@ -270,8 +271,8 @@ async def save_history(data: dict, authorization: str = None):
     return {"ok": True}
 
 @app.post("/clear-history")
-async def clear_history(authorization: str = None):
-    user = await get_user(authorization)
+async def clear_history(request: Request):
+    user = await get_user(request)
     conn = await get_db()
     await conn.execute('DELETE FROM history WHERE user_id=$1', user['username'])
     await conn.close()
@@ -285,8 +286,8 @@ class ExcelRequest(BaseModel):
     subtitle: Optional[str] = None
 
 @app.post("/generate/excel")
-async def generate_excel(req: ExcelRequest, authorization: str = None):
-    await get_user(authorization)
+async def generate_excel(req: ExcelRequest, request: Request):
+    await get_user(request)
     
     import openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -395,7 +396,7 @@ async def generate_excel(req: ExcelRequest, authorization: str = None):
 # ─── FILE UPLOAD ─────────────────────────────────────────
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...), authorization: str = None):
-    await get_user(authorization)
+    await get_user(request)
     
     content = await file.read()
     filename = file.filename.lower()
