@@ -187,19 +187,18 @@ class ChatRequest(BaseModel):
 
 @app.post("/chat")
 async def chat(req: ChatRequest, request: Request):
-    # Get user from token
-    if authorization and authorization.startswith('Bearer '):
-        token = authorization.replace('Bearer ', '')
-        conn = await get_db()
-        session = await conn.fetchrow('SELECT * FROM sessions WHERE token=$1', token)
-        if session:
-            user = await conn.fetchrow('SELECT * FROM users WHERE username=$1', session['user_id'])
-            user = dict(user)
-        else:
-            user = {'username': 'guest', 'full_name': 'Guest', 'role': 'employee'}
-        await conn.close()
-    else:
+    authorization = request.headers.get('Authorization', '')
+    if not authorization or not authorization.startswith('Bearer '):
         raise HTTPException(401, "Jo i autorizuar")
+    token = authorization.replace('Bearer ', '')
+    conn = await get_db()
+    session = await conn.fetchrow('SELECT * FROM sessions WHERE token=$1', token)
+    if not session:
+        await conn.close()
+        raise HTTPException(401, "Jo i autorizuar")
+    user = await conn.fetchrow('SELECT * FROM users WHERE username=$1', session['user_id'])
+    await conn.close()
+    user = dict(user)
     
     system = build_system(user)
     if req.memory:
