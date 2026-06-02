@@ -394,9 +394,7 @@ async function manualExcel() {
   
   try {
     // Kerkoje Noves te gjeneroje permbajtjen si JSON
-    const systemPrompt = `Gjenero VETEM nje JSON objekt per Excel. Format SAKTESISHT:
-{"headers":["Kolona1","Kolona2"],"rows":[["vlera1","vlera2"],...],"title":"titulli"}
-Asnje tekst tjeter, vetem JSON.`;
+    const systemPrompt = 'Gjenero VETEM nje JSON objekt per Excel. Format SAKTESISHT: {"headers":["Kolona1","Kolona2"],"rows":[["vlera1","vlera2"]],"title":"titulli"} Asnje tekst tjeter, vetem JSON.';
 
     const chatRes = await fetch('/chat', {
       method:'POST', headers: authHeaders(),
