@@ -395,7 +395,7 @@ async def generate_excel(req: ExcelRequest, request: Request):
 
 # ─── FILE UPLOAD ─────────────────────────────────────────
 @app.post("/upload")
-async def upload_file(file: UploadFile = File(...), authorization: str = None):
+async def upload_file(file: UploadFile = File(...), request: Request):
     await get_user(request)
     
     content = await file.read()
