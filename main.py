@@ -82,6 +82,22 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+
+@app.get("/me")
+async def get_me(request: Request):
+    authorization = request.headers.get('Authorization', '')
+    if not authorization or not authorization.startswith('Bearer '):
+        raise HTTPException(401, "Jo i autorizuar")
+    token = authorization.replace('Bearer ', '')
+    conn = await get_db()
+    session = await conn.fetchrow('SELECT * FROM sessions WHERE token=$1', token)
+    if not session:
+        await conn.close()
+        raise HTTPException(401, "Sesion i pavlefshëm")
+    user = await conn.fetchrow('SELECT * FROM users WHERE username=$1', session['user_id'])
+    await conn.close()
+    return {"username": user['username'], "full_name": user['full_name'], "role": user['role']}
+
 @app.post("/login")
 async def login(req: LoginRequest):
     conn = await get_db()
