@@ -359,22 +359,49 @@ function makeExcel() {
   .catch(function(e) { remTyp(); addMsg('nova', 'Problem: ' + e.message); });
 }
 
+async function queryBilanc(type, param) {
+  try {
+    var url = '/bilanc/' + type;
+    if (param) url += '?client_name=' + encodeURIComponent(param);
+    var res = await fetch(url, {headers: authHeaders()});
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+function detectBilancQuery(text) {
+  var lower = text.toLowerCase();
+  if (/klient|klientë|klientat/.test(lower)) return 'clients';
+  if (/fatur|shitj|invoice/.test(lower)) return 'invoices';
+  if (/bilanc|financi|permbledh|summary|total/.test(lower)) return 'summary';
+  return null;
+}
+
 function go() {
   var text = inpEl.value.trim(); if (!text || busy) return;
   inpEl.value = ''; inpEl.style.height = 'auto';
   busy = true; sbEl.disabled = true;
   addMsg('user', text); chkMem(text);
   hist.push({role:'user', content: text}); showTyp();
-  fetch('/chat', {
-    method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({messages: hist, memory: mem})
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    if (d.detail) throw new Error(d.detail);
-    var reply = d.reply || '';
-    remTyp(); addMsg('nova', reply);
+  var bilancType = detectBilancQuery(text);
+  var bilancPromise = bilancType ? queryBilanc(bilancType) : Promise.resolve(null);
+  
+  bilancPromise.then(function(bilancData) {
+    var messages = hist.slice();
+    if (bilancData) {
+      var bilancContext = 'Te dhenat nga Bilanc: ' + JSON.stringify(bilancData, null, 2);
+      messages = hist.slice(0, -1).concat([{role:'user', content: text + '\n\n[KONTEKST BILANC]:\n' + bilancContext}]);
+    }
+    
+    fetch('/chat', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({messages: messages, memory: mem})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.detail) throw new Error(d.detail);
+      var reply = d.reply || '';
+      remTyp(); addMsg('nova', reply);
     var hasTable = reply.includes('|') && reply.split('|').length > 4;
     var hasDoc = /raport|dokument|liste|tabele|template/i.test(reply) && reply.split('\n').length > 6;
     if (hasTable || hasDoc) addDownloadButtons(reply);
