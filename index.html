@@ -383,9 +383,9 @@ async function queryBilanc(type, param) {
 
 function detectBilancQuery(text) {
   var lower = text.toLowerCase();
-  if (/klient|klientë|klientat/.test(lower)) return 'clients';
-  if (/fatur|shitj|invoice/.test(lower)) return 'invoices';
-  if (/bilanc|financi|permbledh|summary|total/.test(lower)) return 'summary';
+  if (/klient|klientë|klientat|kallxom|liste|bilanc.*konsult|bold.*klient/.test(lower)) return 'clients';
+  if (/fatur|shitj|invoice|shitje/.test(lower)) return 'invoices';
+  if (/bilanc|financi|permbledh|summary|total|te ardhur/.test(lower)) return 'summary';
   return null;
 }
 
