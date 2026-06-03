@@ -203,7 +203,6 @@ async def chat(req: ChatRequest, request: Request):
     if req.memory:
         system += f"\n\nMEMORY:\n{json.dumps(req.memory, ensure_ascii=False, indent=2)}"
     
-    client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_KEY'))
     import httpx
     api_key = os.environ.get('ANTHROPIC_KEY', '')
     payload = {
