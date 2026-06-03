@@ -140,14 +140,25 @@ function authHeaders() {
 }
 
 window.addEventListener('load', function() {
-  if (token) {
+  var savedUser = localStorage.getItem('nova_user');
+  if (token && savedUser) {
+    try { currentUser = JSON.parse(savedUser); } catch(e) {}
+  }
+  if (token && currentUser) {
     fetch('/me', {headers: authHeaders()})
       .then(function(r) { return r.json(); })
       .then(function(d) {
-        if (d && d.username) { currentUser = d; loadApp(); }
-        else { localStorage.removeItem('nova_token'); showLogin(); }
+        if (d && d.username) { 
+          currentUser = d; 
+          localStorage.setItem('nova_user', JSON.stringify(d));
+          loadApp(); 
+        } else { 
+          localStorage.removeItem('nova_token'); 
+          localStorage.removeItem('nova_user');
+          showLogin(); 
+        }
       })
-      .catch(function() { localStorage.removeItem('nova_token'); showLogin(); });
+      .catch(function() { showLogin(); });
   } else {
     showLogin();
   }
@@ -178,6 +189,7 @@ function doLogin() {
     token = rd.data.token;
     currentUser = rd.data.user;
     localStorage.setItem('nova_token', token);
+    localStorage.setItem('nova_user', JSON.stringify(rd.data.user));
     document.getElementById('login').style.display = 'none';
     loadApp();
   })
@@ -212,6 +224,7 @@ function loadApp() {
 
 function doLogout() {
   localStorage.removeItem('nova_token');
+  localStorage.removeItem('nova_user');
   token = null; currentUser = null; hist = []; mem = {notes:[],clients:[],family:[]};
   msgsEl.innerHTML = '';
   document.getElementById('app').style.display = 'none';
