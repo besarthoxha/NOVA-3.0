@@ -141,12 +141,13 @@ function authHeaders() {
 
 window.addEventListener('load', function() {
   if (token) {
-    fetch('/memory', {headers: authHeaders()})
-      .then(function(r) {
-        if (r.ok) { loadApp(); }
-        else { showLogin(); }
+    fetch('/me', {headers: authHeaders()})
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && d.username) { currentUser = d; loadApp(); }
+        else { localStorage.removeItem('nova_token'); showLogin(); }
       })
-      .catch(function() { showLogin(); });
+      .catch(function() { localStorage.removeItem('nova_token'); showLogin(); });
   } else {
     showLogin();
   }
