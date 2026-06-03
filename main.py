@@ -442,16 +442,29 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
 
 # ─── BILANC SQL ──────────────────────────────────────────
 @app.get("/bilanc/clients")
-async def get_bilanc_clients(request: Request, search: str = ""):
+async def get_bilanc_clients(request: Request, search: str = "", company: str = "BilancBoldConsulting"):
     await get_user(request)
     conn = await get_db()
     if search:
         rows = await conn.fetch(
-            "SELECT * FROM bilanc_clients WHERE LOWER(name) LIKE LOWER($1) ORDER BY name",
-            f"%{search}%"
+            "SELECT * FROM bilanc_clients WHERE db_name=$1 AND LOWER(name) LIKE LOWER($2) ORDER BY name",
+            company, f"%{search}%"
         )
     else:
-        rows = await conn.fetch("SELECT * FROM bilanc_clients ORDER BY name")
+        rows = await conn.fetch(
+            "SELECT * FROM bilanc_clients WHERE db_name=$1 ORDER BY name",
+            company
+        )
+    await conn.close()
+    return [dict(r) for r in rows]
+
+@app.get("/bilanc/all-clients")
+async def get_all_bilanc_clients(request: Request):
+    await get_user(request)
+    conn = await get_db()
+    rows = await conn.fetch(
+        "SELECT * FROM bilanc_clients ORDER BY db_name, name"
+    )
     await conn.close()
     return [dict(r) for r in rows]
 
