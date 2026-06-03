@@ -439,6 +439,58 @@ async def upload_file(request: Request, file: UploadFile = File(...)):
     
     return {"ok": True, "content": text[:15000], "filename": file.filename}
 
+
+# ─── BILANC SQL ──────────────────────────────────────────
+@app.get("/bilanc/clients")
+async def get_bilanc_clients(request: Request, search: str = ""):
+    await get_user(request)
+    conn = await get_db()
+    if search:
+        rows = await conn.fetch(
+            "SELECT * FROM bilanc_clients WHERE LOWER(name) LIKE LOWER($1) ORDER BY name",
+            f"%{search}%"
+        )
+    else:
+        rows = await conn.fetch("SELECT * FROM bilanc_clients ORDER BY name")
+    await conn.close()
+    return [dict(r) for r in rows]
+
+@app.get("/bilanc/invoices")
+async def get_bilanc_invoices(request: Request, client_name: str = ""):
+    await get_user(request)
+    conn = await get_db()
+    if client_name:
+        rows = await conn.fetch(
+            """SELECT * FROM bilanc_invoices 
+               WHERE LOWER(client_name) LIKE LOWER($1) 
+               ORDER BY doc_date DESC LIMIT 20""",
+            f"%{client_name}%"
+        )
+    else:
+        rows = await conn.fetch(
+            "SELECT * FROM bilanc_invoices ORDER BY doc_date DESC LIMIT 20"
+        )
+    await conn.close()
+    return [dict(r) for r in rows]
+
+@app.get("/bilanc/summary")
+async def get_bilanc_summary(request: Request):
+    await get_user(request)
+    conn = await get_db()
+    clients = await conn.fetchval("SELECT COUNT(*) FROM bilanc_clients")
+    invoices = await conn.fetchval("SELECT COUNT(*) FROM bilanc_invoices")
+    total = await conn.fetchval("SELECT COALESCE(SUM(total_with_vat), 0) FROM bilanc_invoices")
+    unpaid = await conn.fetchval(
+        "SELECT COALESCE(SUM(total_with_vat - amount_paid), 0) FROM bilanc_invoices WHERE amount_paid < total_with_vat"
+    )
+    await conn.close()
+    return {
+        "total_clients": clients,
+        "total_invoices": invoices,
+        "total_revenue": round(float(total), 2),
+        "unpaid_amount": round(float(unpaid), 2)
+    }
+
 # ─── STATIC ──────────────────────────────────────────────
 @app.get("/")
 async def root():
