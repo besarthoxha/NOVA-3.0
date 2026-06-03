@@ -384,34 +384,30 @@ function go() {
   hist.push({role:'user', content: text}); showTyp();
   var bilancType = detectBilancQuery(text);
   var bilancPromise = bilancType ? queryBilanc(bilancType) : Promise.resolve(null);
-  
   bilancPromise.then(function(bilancData) {
     var messages = hist.slice();
     if (bilancData) {
       var bilancContext = 'Te dhenat nga Bilanc: ' + JSON.stringify(bilancData, null, 2);
       messages = hist.slice(0, -1).concat([{role:'user', content: text + '\n\n[KONTEKST BILANC]:\n' + bilancContext}]);
     }
-    
-    fetch('/chat', {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({messages: messages, memory: mem})
-    })
+    fetch('/chat', {method: 'POST', headers: authHeaders(), body: JSON.stringify({messages: messages, memory: mem})})
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d.detail) throw new Error(d.detail);
       var reply = d.reply || '';
       remTyp(); addMsg('nova', reply);
-    var hasTable = reply.includes('|') && reply.split('|').length > 4;
-    var hasDoc = /raport|dokument|liste|tabele|template/i.test(reply) && reply.split('\n').length > 6;
-    if (hasTable || hasDoc) addDownloadButtons(reply);
-    hist.push({role:'assistant', content: reply});
-    fetch('/history', {method:'POST', headers: authHeaders(), body: JSON.stringify({role:'user', content: text})});
-    fetch('/history', {method:'POST', headers: authHeaders(), body: JSON.stringify({role:'assistant', content: reply})});
-  })
-  .catch(function(e) { remTyp(); addMsg('nova', 'Dicka shkoi keq: ' + e.message); });
-  busy = false; sbEl.disabled = false;
+      var hasTable = reply.includes('|') && reply.split('|').length > 4;
+      var hasDoc = /raport|dokument|liste|tabele|template/i.test(reply) && reply.split('\n').length > 6;
+      if (hasTable || hasDoc) addDownloadButtons(reply);
+      hist.push({role:'assistant', content: reply});
+      fetch('/history', {method:'POST', headers: authHeaders(), body: JSON.stringify({role:'user', content: text})});
+      fetch('/history', {method:'POST', headers: authHeaders(), body: JSON.stringify({role:'assistant', content: reply})});
+      busy = false; sbEl.disabled = false;
+    })
+    .catch(function(e) { remTyp(); addMsg('nova', 'Dicka shkoi keq: ' + e.message); busy = false; sbEl.disabled = false; });
+  });
 }
+
 
 function uploadFile(input) {
   var file = input.files[0]; if (!file) return;
