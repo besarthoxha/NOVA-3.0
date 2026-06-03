@@ -374,8 +374,9 @@ function makeExcel() {
 
 async function queryBilanc(type, param) {
   try {
-    var url = '/bilanc/' + type;
-    if (param) url += '?client_name=' + encodeURIComponent(param);
+    var url = '/bilanc/all-clients';
+    if (type === 'invoices') url = '/bilanc/invoices';
+    if (type === 'summary') url = '/bilanc/summary';
     var res = await fetch(url, {headers: authHeaders()});
     return await res.json();
   } catch(e) { return null; }
