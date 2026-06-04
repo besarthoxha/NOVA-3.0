@@ -566,6 +566,29 @@ async def get_purchase_book(request: Request, company: str = "BilancBoldConsulti
     await conn.close()
     return [dict(r) for r in rows]
 
+
+@app.post("/speak")
+async def speak(request: Request):
+    data = await request.json()
+    text = data.get('text', '')
+    el_key = os.environ.get('EL_KEY', '')
+    
+    if not el_key:
+        raise HTTPException(400, "ElevenLabs key nuk eshte konfiguruar")
+    
+    import httpx
+    voice_id = 'ocb5roe7gELIkZqiOElv'
+    async with httpx.AsyncClient(timeout=30) as http:
+        res = await http.post(
+            f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}',
+            headers={'Content-Type': 'application/json', 'xi-api-key': el_key},
+            json={'text': text, 'model_id': 'eleven_multilingual_v2',
+                  'voice_settings': {'stability': 0.5, 'similarity_boost': 0.75}}
+        )
+    
+    from fastapi.responses import Response
+    return Response(content=res.content, media_type='audio/mpeg')
+
 # ─── STATIC ──────────────────────────────────────────────
 @app.get("/")
 async def root():
