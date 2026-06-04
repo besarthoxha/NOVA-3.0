@@ -490,19 +490,55 @@ async def get_bilanc_invoices(request: Request, client_name: str = ""):
 async def get_bilanc_summary(request: Request):
     await get_user(request)
     conn = await get_db()
-    clients = await conn.fetchval("SELECT COUNT(*) FROM bilanc_clients")
-    invoices = await conn.fetchval("SELECT COUNT(*) FROM bilanc_invoices")
-    total = await conn.fetchval("SELECT COALESCE(SUM(total_with_vat), 0) FROM bilanc_invoices")
-    unpaid = await conn.fetchval(
-        "SELECT COALESCE(SUM(total_with_vat - amount_paid), 0) FROM bilanc_invoices WHERE amount_paid < total_with_vat"
+    companies = await conn.fetch(
+        "SELECT c.db_name, co.company_name, COUNT(c.id) as client_count FROM bilanc_clients c LEFT JOIN bilanc_companies co ON c.db_name = co.db_name GROUP BY c.db_name, co.company_name ORDER BY client_count DESC"
     )
     await conn.close()
     return {
-        "total_clients": clients,
-        "total_invoices": invoices,
-        "total_revenue": round(float(total), 2),
-        "unpaid_amount": round(float(unpaid), 2)
+        "companies": [dict(c) for c in companies],
+        "total_companies": len(companies),
+        "total_clients": sum(c['client_count'] for c in companies)
     }
+
+
+@app.get("/bilanc/company-clients")
+async def get_company_clients(request: Request, company: str = "BilancBoldConsulting"):
+    await get_user(request)
+    conn = await get_db()
+    rows = await conn.fetch(
+        "SELECT id, name, address, phone, email, nipt FROM bilanc_clients WHERE db_name=$1 ORDER BY name",
+        company
+    )
+    await conn.close()
+    return [dict(r) for r in rows]
+
+@app.get("/bilanc/sales-book")
+async def get_sales_book(request: Request, company: str = "BilancBoldConsulting", month: int = 0, year: int = 0):
+    await get_user(request)
+    conn = await get_db()
+    query = "SELECT doc_number, doc_date, client_name, total, total_with_vat, amount_paid, due_date FROM bilanc_invoices WHERE db_name=$1 AND doc_type='shitje'"
+    params = [company]
+    if month > 0 and year > 0:
+        query += " AND EXTRACT(MONTH FROM doc_date)=$2 AND EXTRACT(YEAR FROM doc_date)=$3"
+        params.extend([month, year])
+    query += " ORDER BY doc_date DESC"
+    rows = await conn.fetch(query, *params)
+    await conn.close()
+    return [dict(r) for r in rows]
+
+@app.get("/bilanc/purchase-book")
+async def get_purchase_book(request: Request, company: str = "BilancBoldConsulting", month: int = 0, year: int = 0):
+    await get_user(request)
+    conn = await get_db()
+    query = "SELECT doc_number, doc_date, client_name, total, total_with_vat, amount_paid, due_date FROM bilanc_invoices WHERE db_name=$1 AND doc_type='blerje'"
+    params = [company]
+    if month > 0 and year > 0:
+        query += " AND EXTRACT(MONTH FROM doc_date)=$2 AND EXTRACT(YEAR FROM doc_date)=$3"
+        params.extend([month, year])
+    query += " ORDER BY doc_date DESC"
+    rows = await conn.fetch(query, *params)
+    await conn.close()
+    return [dict(r) for r in rows]
 
 # ─── STATIC ──────────────────────────────────────────────
 @app.get("/")
