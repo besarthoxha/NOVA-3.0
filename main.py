@@ -491,13 +491,27 @@ async def get_bilanc_summary(request: Request):
     await get_user(request)
     conn = await get_db()
     companies = await conn.fetch(
-        "SELECT c.db_name, co.company_name, COUNT(c.id) as client_count FROM bilanc_clients c LEFT JOIN bilanc_companies co ON c.db_name = co.db_name GROUP BY c.db_name, co.company_name ORDER BY client_count DESC"
+        "SELECT db_name, COUNT(id) as client_count FROM bilanc_clients GROUP BY db_name ORDER BY client_count DESC"
     )
     await conn.close()
+    # Map db names to company names
+    name_map = {
+        "BilancBoldConsulting": "BOLD Consulting",
+        "BilancNextCode": "Next Code",
+        "BilancAGUniteti": "AG Uniteti",
+        "BilancNova": "Nova"
+    }
+    result = []
+    for c in companies:
+        result.append({
+            "db_name": c["db_name"],
+            "company_name": name_map.get(c["db_name"], c["db_name"]),
+            "client_count": c["client_count"]
+        })
     return {
-        "companies": [dict(c) for c in companies],
-        "total_companies": len(companies),
-        "total_clients": sum(c['client_count'] for c in companies)
+        "companies": result,
+        "total_companies": len(result),
+        "total_clients": sum(c["client_count"] for c in result)
     }
 
 
