@@ -496,10 +496,12 @@ async function speak(text) {
       body: JSON.stringify({text: text})
     });
     if (!res.ok) return;
-    var blob = await res.blob();
-    var url = URL.createObjectURL(blob);
-    var audio = new Audio(url);
-    audio.play();
+    var arrayBuffer = await res.arrayBuffer();
+    var audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    var source = audioCtx.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(audioCtx.destination);
+    source.start(0);
   } catch(e) { console.log('Speak error:', e); }
 }
 
