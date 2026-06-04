@@ -396,11 +396,12 @@ function getMonthYear(text) {
 
 function detectBilancQuery(text) {
   var lower = text.toLowerCase();
-  if (/sa klient|sa kompani|kemi.*kompani|kompanit/.test(lower)) return 'summary';
-  if (/liber.*shitj|shitjet|librin.*shitj|sales/.test(lower)) return 'sales-book';
-  if (/liber.*blerj|blerjet|librin.*blerj|purchase/.test(lower)) return 'purchase-book';
-  if (/klient|klientat|liste.*klient/.test(lower)) return 'company-clients';
-  if (/bilanc|financi|permbledh/.test(lower)) return 'summary';
+  if (/sa kompani|sa klient|kemi.*kompani|kompanit/.test(lower)) return 'summary';
+  if (/liber.*shitj|librin.*shitj|shitjet/.test(lower)) return 'sales-book';
+  if (/liber.*blerj|librin.*blerj|blerjet/.test(lower)) return 'purchase-book';
+  if (/fatur.*shitj|shitj.*fatur|fature.*fundit|fundit.*fatur|fatura|shitje/.test(lower)) return 'sales-book';
+  if (/klient|liste|kallxom|coma.*klient|shfaq.*klient/.test(lower)) return 'company-clients';
+  if (/blerj|furnitor/.test(lower)) return 'purchase-book';
   return null;
 }
 
