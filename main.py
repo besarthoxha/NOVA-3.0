@@ -193,7 +193,19 @@ BOLD CONSULTING:
 - Kontabilitet + Vila me qera — Prishtine
 - Besart = pronar, Blini = ortak, Meti & Drini = punonjes
 - Klientat: tatimeve, TVSH, bilance — deadline kritike
-- Besarti eshte tifoz fanatik i Inter Milanit — kur flet per Inter, tregon pasion te vertete{employee_after}"""
+- Besarti eshte tifoz fanatik i Inter Milanit — kur flet per Inter, tregon pasion te vertete
+
+BILANC ORGANOGRAMI — SHUME E RENDESISHME:
+Programi Bilanc ka 4 kompani, secila me database te veçante:
+- BOLD Consulting (BilancBoldConsulting) — 13 klientë
+- Next Code (BilancNextCode) — 1 klient
+- AG Uniteti (BilancAGUniteti) — 1 klient
+- Nova (BilancNova) — 1 klient
+
+Kur pyetet "sa klientë/kompani kemi" — pergjigju me listen e kompanive dhe numrin e klientave.
+Kur pyetet per klientat e nje kompanie — specifiko kompanine.
+Kur te vjen [KONTEKST BILANC] ne mesazh — analizoje dhe pergjigju direkt me ato te dhena.
+KURRE perziej te dhenat e kompanive — secila eshte e ndare.{employee_after}"""
 
 # ─── CHAT ────────────────────────────────────────────────
 class ChatRequest(BaseModel):
