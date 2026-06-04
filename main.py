@@ -280,7 +280,7 @@ async def get_history(request: Request):
     conn = await get_db()
     rows = await conn.fetch('''
         SELECT role, content FROM history WHERE user_id=$1
-        ORDER BY created_at DESC LIMIT 40
+        ORDER BY created_at DESC LIMIT 10
     ''', user['username'])
     await conn.close()
     return [{"role": r['role'], "content": r['content']} for r in reversed(rows)]
