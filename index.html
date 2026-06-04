@@ -102,6 +102,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div id="hdr-actions">
       <input type="file" id="file-inp" accept=".xlsx,.xls,.pdf,.txt,.csv,.docx" style="display:none" onchange="uploadFile(this)">
+      <button class="hbtn" id="voice-enable-btn" onclick="enableVoice()" style="background:rgba(212,175,55,0.15);color:var(--gold);border-color:rgba(212,175,55,0.4)">&#128266; zer</button>
       <button class="hbtn" onclick="document.getElementById('file-inp').click()">ngarko</button>
       <button class="hbtn" onclick="clearChat()">reset</button>
       <button class="hbtn danger" onclick="doLogout()">dil</button>
@@ -438,6 +439,7 @@ function go() {
       if (d.detail) throw new Error(d.detail);
       var reply = d.reply || '';
       remTyp(); addMsg('nova', reply);
+      speak(reply);
       var hasTable = reply.includes('|') && reply.split('|').length > 4;
       var hasDoc = /raport|dokument|liste|tabele|template/i.test(reply) && reply.split('\n').length > 6;
       if (hasTable || hasDoc) addDownloadButtons(reply);
@@ -466,13 +468,40 @@ function uploadFile(input) {
     .then(function(r) { return r.json(); })
     .then(function(d) {
       var reply = d.reply || '';
-      remTyp(); addMsg('nova', reply); hist.push({role:'assistant', content: reply});
+      remTyp(); addMsg('nova', reply);
+      speak(reply); hist.push({role:'assistant', content: reply});
     })
     .catch(function(e) { remTyp(); addMsg('nova', 'Problem: ' + e.message); });
   input.value = '';
 }
 
 function sq(t) { inpEl.value = t; go(); }
+
+var audioCtx = null;
+var voiceEnabled = false;
+
+function enableVoice() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  voiceEnabled = true;
+  document.getElementById('voice-enable-btn').style.display = 'none';
+  addMsg('nova', 'Zeri u aktivizua.');
+}
+
+async function speak(text) {
+  if (!voiceEnabled) return;
+  try {
+    var res = await fetch('/speak', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({text: text})
+    });
+    if (!res.ok) return;
+    var blob = await res.blob();
+    var url = URL.createObjectURL(blob);
+    var audio = new Audio(url);
+    audio.play();
+  } catch(e) { console.log('Speak error:', e); }
+}
 
 inpEl.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } });
 inpEl.addEventListener('input', function() { inpEl.style.height = 'auto'; inpEl.style.height = Math.min(inpEl.scrollHeight, 100) + 'px'; });
