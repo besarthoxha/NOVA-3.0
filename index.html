@@ -372,22 +372,49 @@ function makeExcel() {
   .catch(function(e) { remTyp(); addMsg('nova', 'Problem: ' + e.message); });
 }
 
-async function queryBilanc(type, param) {
-  try {
-    var url = '/bilanc/all-clients';
-    if (type === 'invoices') url = '/bilanc/invoices';
-    if (type === 'summary') url = '/bilanc/summary';
-    var res = await fetch(url, {headers: authHeaders()});
-    return await res.json();
-  } catch(e) { return null; }
+
+
+function getCompanyDB(text) {
+  var lower = text.toLowerCase();
+  if (/bold|bold consulting/.test(lower)) return 'BilancBoldConsulting';
+  if (/next code|nextcode/.test(lower)) return 'BilancNextCode';
+  if (/ag uniteti|uniteti/.test(lower)) return 'BilancAGUniteti';
+  if (/nova/.test(lower)) return 'BilancNova';
+  return 'BilancBoldConsulting';
+}
+
+function getMonthYear(text) {
+  var months = {janar:1,shkurt:2,mars:3,prill:4,'maj':5,qershor:6,korrik:7,gusht:8,shtator:9,tetor:10,nentor:11,dhjetor:12};
+  var result = {month:0, year:0};
+  for (var m in months) {
+    if (text.toLowerCase().includes(m)) result.month = months[m];
+  }
+  var yearMatch = text.match(/20\d\d/);
+  if (yearMatch) result.year = parseInt(yearMatch[0]);
+  return result;
 }
 
 function detectBilancQuery(text) {
   var lower = text.toLowerCase();
-  if (/klient|klientë|klientat|kallxom|liste|bilanc.*konsult|bold.*klient/.test(lower)) return 'clients';
-  if (/fatur|shitj|invoice|shitje/.test(lower)) return 'invoices';
-  if (/bilanc|financi|permbledh|summary|total|te ardhur/.test(lower)) return 'summary';
+  if (/sa klient|sa kompani|kemi.*kompani|kompanit/.test(lower)) return 'summary';
+  if (/liber.*shitj|shitjet|librin.*shitj|sales/.test(lower)) return 'sales-book';
+  if (/liber.*blerj|blerjet|librin.*blerj|purchase/.test(lower)) return 'purchase-book';
+  if (/klient|klientat|liste.*klient/.test(lower)) return 'company-clients';
+  if (/bilanc|financi|permbledh/.test(lower)) return 'summary';
   return null;
+}
+
+async function queryBilanc(type, text) {
+  try {
+    var company = getCompanyDB(text || '');
+    var my = getMonthYear(text || '');
+    var url = '/bilanc/' + type + '?company=' + company;
+    if (type === 'summary') url = '/bilanc/summary';
+    if (type === 'all-clients') url = '/bilanc/all-clients';
+    if (my.month > 0) url += '&month=' + my.month + '&year=' + my.year;
+    var res = await fetch(url, {headers: authHeaders()});
+    return await res.json();
+  } catch(e) { return null; }
 }
 
 function go() {
@@ -397,7 +424,7 @@ function go() {
   addMsg('user', text); chkMem(text);
   hist.push({role:'user', content: text}); showTyp();
   var bilancType = detectBilancQuery(text);
-  var bilancPromise = bilancType ? queryBilanc(bilancType) : Promise.resolve(null);
+  var bilancPromise = bilancType ? queryBilanc(bilancType, text) : Promise.resolve(null);
   bilancPromise.then(function(bilancData) {
     var messages = hist.slice();
     if (bilancData) {
