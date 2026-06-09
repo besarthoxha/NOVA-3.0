@@ -8,4 +8,4 @@ python-docx
 reportlab
 python-multipart
 httpx
-pyodbc
+pymssql
