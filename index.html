@@ -397,12 +397,10 @@ function getMonthYear(text) {
 
 function detectBilancQuery(text) {
   var lower = text.toLowerCase();
-  if (/sa kompani|sa klient|kemi.*kompani|kompanit/.test(lower)) return 'summary';
-  if (/liber.*shitj|librin.*shitj|shitjet/.test(lower)) return 'sales-book';
-  if (/liber.*blerj|librin.*blerj|blerjet/.test(lower)) return 'purchase-book';
-  if (/fatur.*shitj|shitj.*fatur|fature.*fundit|fundit.*fatur|fatura|shitje/.test(lower)) return 'sales-book';
-  if (/klient|liste|kallxom|coma.*klient|shfaq.*klient/.test(lower)) return 'company-clients';
-  if (/blerj|furnitor/.test(lower)) return 'purchase-book';
+  if (/sa kompani|sa klient|kemi.*kompani|kompanit|permbledh|summary/.test(lower)) return 'sql-summary';
+  if (/liber.*shitj|librin.*shitj|shitjet|fatur.*shitj|fature.*fundit|fatura|shitje/.test(lower)) return 'sql-sales';
+  if (/liber.*blerj|librin.*blerj|blerjet|blerje|furnitor/.test(lower)) return 'sql-purchases';
+  if (/klient|liste|kallxom|shfaq/.test(lower)) return 'sql-clients';
   return null;
 }
 
@@ -410,15 +408,22 @@ async function queryBilanc(type, text) {
   try {
     var company = getCompanyDB(text || '');
     var my = getMonthYear(text || '');
-    var url = '/bilanc/' + type + '?company=' + company;
-    if (type === 'summary') url = '/bilanc/summary';
-    if (type === 'all-clients') url = '/bilanc/all-clients';
-    if (my.month > 0) url += '&month=' + my.month + '&year=' + my.year;
+    var url = '/' + type + '?company=' + company;
+    if (type === 'sql-summary') url = '/sql/summary?company=' + company;
+    if (type === 'sql-clients') url = '/sql/clients?company=' + company;
+    if (type === 'sql-sales') {
+      url = '/sql/sales?company=' + company;
+      if (my.month > 0) url += '&month=' + my.month + '&year=' + my.year;
+    }
+    if (type === 'sql-purchases') {
+      url = '/sql/purchases?company=' + company;
+      if (my.month > 0) url += '&month=' + my.month + '&year=' + my.year;
+    }
     var res = await fetch(url, {headers: authHeaders()});
+    if (!res.ok) return null;
     return await res.json();
   } catch(e) { return null; }
 }
-
 function go() {
   var text = inpEl.value.trim(); if (!text || busy) return;
   inpEl.value = ''; inpEl.style.height = 'auto';
@@ -490,22 +495,36 @@ function enableVoice() {
 async function speak(text) {
   if (!voiceEnabled) return;
   try {
+    // Provoj ElevenLabs fillimisht
     var res = await fetch('/speak', {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({text: text})
     });
-    if (!res.ok) return;
-    var blob = await res.blob();
-    var url = URL.createObjectURL(blob);
-    var audio = new Audio();
-    audio.src = url;
-    audio.type = 'audio/mpeg';
-    var playPromise = audio.play();
-    if (playPromise) {
-      playPromise.catch(function(e) { console.log('Play error:', e); });
+    if (res.ok) {
+      var blob = await res.blob();
+      if (blob.size > 1000) {
+        var url = URL.createObjectURL(blob);
+        var audio = new Audio();
+        audio.src = url;
+        var playPromise = audio.play();
+        if (playPromise) playPromise.catch(function(e) { speakBrowser(text); });
+        return;
+      }
     }
-  } catch(e) { console.log('Speak error:', e); }
+    // Fallback - Web Speech API
+    speakBrowser(text);
+  } catch(e) { speakBrowser(text); }
+}
+
+function speakBrowser(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  var utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'sq-AL';
+  utt.rate = 0.95;
+  utt.pitch = 1.0;
+  window.speechSynthesis.speak(utt);
 }
 
 inpEl.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } });
