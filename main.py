@@ -770,14 +770,14 @@ async def sql_bank(request: Request, company: str = "BilancBoldConsulting"):
         conn = get_sql_conn(company)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT ISNULL(b.Description, b.Code) as Bank,
+            SELECT b.BankName as Bank,
                    ISNULL(SUM(CASE WHEN bt.isPayment=0 THEN bt.Amount ELSE 0 END),0) as TotalIn,
                    ISNULL(SUM(CASE WHEN bt.isPayment=1 THEN bt.Amount ELSE 0 END),0) as TotalOut,
                    ISNULL(SUM(CASE WHEN bt.isPayment=0 THEN bt.Amount ELSE -bt.Amount END),0) as Balance
             FROM o2Bank b
             LEFT JOIN o2BankTransactionHeader bt ON bt.ServiceUnitID = b.ID AND bt.Deleted=0
             WHERE b.Deleted=0
-            GROUP BY b.Description, b.Code
+            GROUP BY b.BankName
         """)
         rows = cursor.fetchall()
         conn.close()
