@@ -399,7 +399,8 @@ function detectBilancQuery(text) {
   var lower = text.toLowerCase();
   if (/sa kompani|sa klient|kemi.*kompani|kompanit/.test(lower)) return 'sql-summary';
   if (/profit|loss|p&l|fitim|humbje|rezultat/.test(lower)) return 'sql-pnl';
-  if (/banka|bankes|gjendj.*bank|harmonizim/.test(lower)) return 'sql-bank';
+  if ((/arka|arkes/.test(lower)) && (/banka|bankes/.test(lower))) return 'sql-cash-bank';
+  if (/banka|bankes|gjendj.*bank|harmonizim|pro.?credit|procredit/.test(lower)) return 'sql-bank';
   if (/arka|arkes|gjendj.*ark|cash/.test(lower)) return 'sql-cash';
   if (/kartela.*klient|debitor|klient.*kartela/.test(lower)) return 'sql-client-ledger';
   if (/kartela.*furnitor|kreditor|furnitor.*kartela/.test(lower)) return 'sql-supplier-ledger';
@@ -407,6 +408,7 @@ function detectBilancQuery(text) {
   if (/liber.*blerj|blerjet|blerje|furnitor/.test(lower)) return 'sql-purchases';
   if (/klient|liste|kallxom klienta/.test(lower)) return 'sql-clients';
   if (/kontime|llogari|account/.test(lower)) return 'sql-accounts';
+  if (/bilanc|gjendj|likuiditet|para/.test(lower)) return 'sql-cash-bank';
   return null;
 }
 
@@ -414,6 +416,13 @@ async function queryBilanc(type, text) {
   try {
     var company = getCompanyDB(text || '');
     var my = getMonthYear(text || '');
+    
+    if (type === 'sql-cash-bank') {
+      var cash = await fetch('/sql/cash?company=' + company, {headers: authHeaders()}).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
+      var bank = await fetch('/sql/bank?company=' + company, {headers: authHeaders()}).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
+      return {cash: cash, bank: bank};
+    }
+    
     var url = '/sql/' + type.replace('sql-','') + '?company=' + company;
     if (type === 'sql-sales' || type === 'sql-purchases' || type === 'sql-pnl') {
       if (my.month > 0) url += '&month=' + my.month + '&year=' + my.year;
