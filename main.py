@@ -592,27 +592,27 @@ async def speak(request: Request):
     return Response(content=res.content, media_type='audio/mpeg')
 
 
-import pyodbc
+import pymssql
 
 def get_sql_conn(db_name="BilancBoldConsulting"):
-    server = os.environ.get('SQL_SERVER', '5.tcp.eu.ngrok.io,11989')
+    server_full = os.environ.get('SQL_SERVER', '5.tcp.eu.ngrok.io:11989')
+    if ',' in server_full:
+        server_full = server_full.replace(',', ':')
+    if ':' in server_full:
+        host, port = server_full.rsplit(':', 1)
+        port = int(port)
+    else:
+        host, port = server_full, 1433
+    user = os.environ.get('SQL_USER', 'sa')
+    password = os.environ.get('SQL_PASSWORD', '')
     try:
-        conn = pyodbc.connect(
-            f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={db_name};"
-            f"UID=sa;PWD={os.environ.get('SQL_PASSWORD','')};TrustServerCertificate=yes",
-            timeout=10
+        conn = pymssql.connect(
+            server=host, port=port, user=user,
+            password=password, database=db_name, timeout=10
         )
         return conn
-    except:
-        try:
-            conn = pyodbc.connect(
-                f"DRIVER={{SQL Server}};SERVER={server};DATABASE={db_name};"
-                f"Trusted_Connection=no;UID=sa;PWD={os.environ.get('SQL_PASSWORD','')};TrustServerCertificate=yes",
-                timeout=10
-            )
-            return conn
-        except Exception as e:
-            raise Exception(f"SQL lidhja deshtoi: {e}")
+    except Exception as e:
+        raise Exception(f"SQL lidhja deshtoi: {e}")
 
 COMPANY_DBS = {
     "bold": "BilancBoldConsulting",
