@@ -748,14 +748,14 @@ async def sql_cash(request: Request, company: str = "BilancBoldConsulting"):
         conn = get_sql_conn(company)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT cu.Name as CashUnit,
+            SELECT ISNULL(cu.Description, cu.Code) as CashUnit,
                    ISNULL(SUM(CASE WHEN ct.isPayment=0 THEN ct.Amount ELSE -ct.Amount END),0) as Balance,
                    ISNULL(SUM(CASE WHEN ct.isPayment=0 THEN ct.Amount ELSE 0 END),0) as TotalIn,
                    ISNULL(SUM(CASE WHEN ct.isPayment=1 THEN ct.Amount ELSE 0 END),0) as TotalOut
             FROM o2CashUnit cu
             LEFT JOIN o2CashTransactionHeader ct ON ct.ServiceUnitID = cu.ID AND ct.Deleted=0
             WHERE cu.Deleted=0
-            GROUP BY cu.Name
+            GROUP BY cu.Description, cu.Code
         """)
         rows = cursor.fetchall()
         conn.close()
@@ -770,14 +770,14 @@ async def sql_bank(request: Request, company: str = "BilancBoldConsulting"):
         conn = get_sql_conn(company)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT b.Name as Bank,
+            SELECT ISNULL(b.Description, b.Code) as Bank,
                    ISNULL(SUM(CASE WHEN bt.isPayment=0 THEN bt.Amount ELSE 0 END),0) as TotalIn,
                    ISNULL(SUM(CASE WHEN bt.isPayment=1 THEN bt.Amount ELSE 0 END),0) as TotalOut,
                    ISNULL(SUM(CASE WHEN bt.isPayment=0 THEN bt.Amount ELSE -bt.Amount END),0) as Balance
             FROM o2Bank b
             LEFT JOIN o2BankTransactionHeader bt ON bt.ServiceUnitID = b.ID AND bt.Deleted=0
             WHERE b.Deleted=0
-            GROUP BY b.Name
+            GROUP BY b.Description, b.Code
         """)
         rows = cursor.fetchall()
         conn.close()
