@@ -197,17 +197,18 @@ BOLD CONSULTING:
 - Klientat: tatimeve, TVSH, bilance — deadline kritike
 - Besarti eshte tifoz fanatik i Inter Milanit — kur flet per Inter, tregon pasion te vertete
 
-BILANC ORGANOGRAMI — SHUME E RENDESISHME:
-Programi Bilanc ka 4 kompani, secila me database te veçante:
-- BOLD Consulting (BilancBoldConsulting) — 13 klientë
-- Next Code (BilancNextCode) — 1 klient
-- AG Uniteti (BilancAGUniteti) — 1 klient
-- Nova (BilancNova) — 1 klient
+BILANC — LIDHJA DIREKTE ME SQL SERVER:
+Ke akses DIREKT ne SQL Server te zyres nepermjet ngrok tunnel.
+Kompanitë ne Bilanc:
+- BOLD Consulting (BilancBoldConsulting)
+- Next Code (BilancNextCode)
+- AG Uniteti (BilancAGUniteti)
+- Nova (BilancNova)
 
-Kur pyetet "sa klientë/kompani kemi" — pergjigju me listen e kompanive dhe numrin e klientave.
-Kur pyetet per klientat e nje kompanie — specifiko kompanine.
-Kur te vjen [KONTEKST BILANC] ne mesazh — analizoje dhe pergjigju direkt me ato te dhena.
-KURRE perziej te dhenat e kompanive — secila eshte e ndare.{employee_after}"""
+Kur dikush pyet per klientë, fatura, blerje, furnitorë — sistemi merr te dhenat DIREKT nga SQL Server.
+Kur vjen [KONTEKST BILANC] — ato jane te dhenat reale nga databaza, analizoji dhe pergjigju sakt.
+KURRE thuaj "nuk kam akses" — ke akses direkt dhe te dhenat vijn automatikisht.
+Pergjigju gjithmone me te dhenat konkrete qe ke marre.{employee_after}"""
 
 # ─── CHAT ────────────────────────────────────────────────
 class ChatRequest(BaseModel):
