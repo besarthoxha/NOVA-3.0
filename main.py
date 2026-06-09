@@ -749,15 +749,17 @@ async def sql_cash(request: Request, company: str = "BilancBoldConsulting"):
         cursor = conn.cursor()
         cursor.execute("""
             SELECT cu.Name as CashUnit,
-                   ISNULL(SUM(b.Debit),0) - ISNULL(SUM(b.Credit),0) as Balance
+                   ISNULL(SUM(CASE WHEN ct.isPayment=0 THEN ct.Amount ELSE -ct.Amount END),0) as Balance,
+                   ISNULL(SUM(CASE WHEN ct.isPayment=0 THEN ct.Amount ELSE 0 END),0) as TotalIn,
+                   ISNULL(SUM(CASE WHEN ct.isPayment=1 THEN ct.Amount ELSE 0 END),0) as TotalOut
             FROM o2CashUnit cu
-            LEFT JOIN o2AccountTransactionBody b ON b.CashUnitID = cu.ID
+            LEFT JOIN o2CashTransactionHeader ct ON ct.ServiceUnitID = cu.ID AND ct.Deleted=0
             WHERE cu.Deleted=0
             GROUP BY cu.Name
         """)
         rows = cursor.fetchall()
         conn.close()
-        return [{"name": r[0], "balance": float(r[1])} for r in rows]
+        return [{"name": r[0], "balance": float(r[1]), "total_in": float(r[2]), "total_out": float(r[3])} for r in rows]
     except Exception as e:
         raise HTTPException(500, str(e))
 
@@ -769,9 +771,9 @@ async def sql_bank(request: Request, company: str = "BilancBoldConsulting"):
         cursor = conn.cursor()
         cursor.execute("""
             SELECT b.Name as Bank,
-                   ISNULL(SUM(bt.Amount),0) as TotalIn,
-                   ISNULL(SUM(bt.AmountOut),0) as TotalOut,
-                   ISNULL(SUM(bt.Amount),0) - ISNULL(SUM(bt.AmountOut),0) as Balance
+                   ISNULL(SUM(CASE WHEN bt.isPayment=0 THEN bt.Amount ELSE 0 END),0) as TotalIn,
+                   ISNULL(SUM(CASE WHEN bt.isPayment=1 THEN bt.Amount ELSE 0 END),0) as TotalOut,
+                   ISNULL(SUM(CASE WHEN bt.isPayment=0 THEN bt.Amount ELSE -bt.Amount END),0) as Balance
             FROM o2Bank b
             LEFT JOIN o2BankTransactionHeader bt ON bt.BankID = b.ID AND bt.Deleted=0
             WHERE b.Deleted=0
