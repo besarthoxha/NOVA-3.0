@@ -591,6 +591,119 @@ async def speak(request: Request):
     from fastapi.responses import Response
     return Response(content=res.content, media_type='audio/mpeg')
 
+
+import pyodbc
+
+def get_sql_conn(db_name="BilancBoldConsulting"):
+    server = os.environ.get('SQL_SERVER', '5.tcp.eu.ngrok.io,11989')
+    try:
+        conn = pyodbc.connect(
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={db_name};"
+            f"UID=sa;PWD={os.environ.get('SQL_PASSWORD','')};TrustServerCertificate=yes",
+            timeout=10
+        )
+        return conn
+    except:
+        try:
+            conn = pyodbc.connect(
+                f"DRIVER={{SQL Server}};SERVER={server};DATABASE={db_name};"
+                f"Trusted_Connection=no;UID=sa;PWD={os.environ.get('SQL_PASSWORD','')};TrustServerCertificate=yes",
+                timeout=10
+            )
+            return conn
+        except Exception as e:
+            raise Exception(f"SQL lidhja deshtoi: {e}")
+
+COMPANY_DBS = {
+    "bold": "BilancBoldConsulting",
+    "bold consulting": "BilancBoldConsulting",
+    "next code": "BilancNextCode",
+    "nextcode": "BilancNextCode",
+    "ag uniteti": "BilancAGUniteti",
+    "uniteti": "BilancAGUniteti",
+    "nova": "BilancNova",
+}
+
+@app.get("/sql/clients")
+async def sql_clients(request: Request, company: str = "BilancBoldConsulting"):
+    await get_user(request)
+    try:
+        conn = get_sql_conn(company)
+        cursor = conn.cursor()
+        cursor.execute("SELECT ID, Name, ISNULL(Address,'') as Address, ISNULL(Phone,'') as Phone, ISNULL(Email,'') as Email, ISNULL(NIPT,'') as NIPT FROM o2Client WHERE Deleted=0 ORDER BY Name")
+        rows = cursor.fetchall()
+        conn.close()
+        return [{"id": r[0], "name": r[1], "address": r[2], "phone": r[3], "email": r[4], "nipt": r[5]} for r in rows]
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/sql/sales")
+async def sql_sales(request: Request, company: str = "BilancBoldConsulting", month: int = 0, year: int = 0):
+    await get_user(request)
+    try:
+        conn = get_sql_conn(company)
+        cursor = conn.cursor()
+        query = """SELECT TOP 100 s.DocNumber, CONVERT(varchar,s.DocDate,103) as DocDate,
+                   ISNULL(c.Name,'') as ClientName, ISNULL(s.Total,0) as Total,
+                   ISNULL(s.TotalWithVAT,0) as TotalWithVAT, ISNULL(s.AmountPaid,0) as AmountPaid,
+                   CONVERT(varchar,s.DueDate,103) as DueDate
+                   FROM o2SalesDocHeader s
+                   LEFT JOIN o2Client c ON s.ClientID = c.ID
+                   WHERE s.Deleted=0"""
+        if month > 0 and year > 0:
+            query += f" AND MONTH(s.DocDate)={month} AND YEAR(s.DocDate)={year}"
+        query += " ORDER BY s.DocDate DESC"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        conn.close()
+        return [{"doc_number": r[0], "doc_date": r[1], "client": r[2], "total": r[3], "total_with_vat": r[4], "amount_paid": r[5], "due_date": r[6]} for r in rows]
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/sql/purchases")
+async def sql_purchases(request: Request, company: str = "BilancBoldConsulting", month: int = 0, year: int = 0):
+    await get_user(request)
+    try:
+        conn = get_sql_conn(company)
+        cursor = conn.cursor()
+        query = """SELECT TOP 100 p.DocNumber, CONVERT(varchar,p.DocDate,103) as DocDate,
+                   ISNULL(s.Name,'') as SupplierName, ISNULL(p.Total,0) as Total,
+                   ISNULL(p.TotalWithVAT,0) as TotalWithVAT, ISNULL(p.AmountPaid,0) as AmountPaid
+                   FROM o2PurchaseDocHeader p
+                   LEFT JOIN o2Supplier s ON p.SupplierID = s.ID
+                   WHERE p.Deleted=0"""
+        if month > 0 and year > 0:
+            query += f" AND MONTH(p.DocDate)={month} AND YEAR(p.DocDate)={year}"
+        query += " ORDER BY p.DocDate DESC"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        conn.close()
+        return [{"doc_number": r[0], "doc_date": r[1], "supplier": r[2], "total": r[3], "total_with_vat": r[4], "amount_paid": r[5]} for r in rows]
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/sql/summary")
+async def sql_summary(request: Request, company: str = "BilancBoldConsulting"):
+    await get_user(request)
+    try:
+        conn = get_sql_conn(company)
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM o2Client WHERE Deleted=0")
+        clients = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*), ISNULL(SUM(TotalWithVAT),0), ISNULL(SUM(AmountPaid),0) FROM o2SalesDocHeader WHERE Deleted=0")
+        s = cursor.fetchone()
+        conn.close()
+        return {
+            "company": company,
+            "total_clients": clients,
+            "total_invoices": s[0],
+            "total_revenue": round(float(s[1]), 2),
+            "total_paid": round(float(s[2]), 2),
+            "unpaid": round(float(s[1] - s[2]), 2)
+        }
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
 # ─── STATIC ──────────────────────────────────────────────
 @app.get("/")
 async def root():
