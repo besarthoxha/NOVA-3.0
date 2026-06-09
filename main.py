@@ -205,10 +205,21 @@ Kompanitë ne Bilanc:
 - AG Uniteti (BilancAGUniteti)
 - Nova (BilancNova)
 
-Kur dikush pyet per klientë, fatura, blerje, furnitorë — sistemi merr te dhenat DIREKT nga SQL Server.
-Kur vjen [KONTEKST BILANC] — ato jane te dhenat reale nga databaza, analizoji dhe pergjigju sakt.
-KURRE thuaj "nuk kam akses" — ke akses direkt dhe te dhenat vijn automatikisht.
-Pergjigju gjithmone me te dhenat konkrete qe ke marre.{employee_after}"""
+Ke akses DIREKT ne keto te dhena nga SQL Server:
+- /sql/clients — lista e klientave
+- /sql/sales — faturat e shitjes (me filtrim per muaj/vit)
+- /sql/purchases — faturat e blerjes/furnitoret
+- /sql/summary — permbledhje e kompanise
+- /sql/pnl — Profit & Loss (te ardhura - shpenzime)
+- /sql/bank — gjendja e bankes (harmonizim bankar)
+- /sql/cash — gjendja e arkes
+- /sql/client-ledger — kartela e klientit (debitoret)
+- /sql/supplier-ledger — kartela e furnitorit (kreditoret)
+- /sql/accounts — kontimet dhe plani kontabel
+
+Kur vjen [KONTEKST BILANC] — ato jane te dhenat REALE nga SQL Server, jo te fabrikuara.
+KURRE thuaj "nuk kam akses" ose fabrike te dhena — vetem perdor ato qe vijn nga sistemi.
+Nese te dhena mungojne — thuaj "nuk ka te dhena per kete periudhe" jo shpik vlera.{employee_after}"""
 
 # ─── CHAT ────────────────────────────────────────────────
 class ChatRequest(BaseModel):
@@ -701,6 +712,170 @@ async def sql_summary(request: Request, company: str = "BilancBoldConsulting"):
             "total_revenue": round(float(s[1]), 2),
             "total_paid": round(float(s[2]), 2),
             "unpaid": round(float(s[1] - s[2]), 2)
+        }
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+
+@app.get("/sql/accounts")
+async def sql_accounts(request: Request, company: str = "BilancBoldConsulting"):
+    await get_user(request)
+    try:
+        conn = get_sql_conn(company)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT a.Code, a.Name, 
+                   ISNULL(SUM(b.Debit),0) as Debit,
+                   ISNULL(SUM(b.Credit),0) as Credit,
+                   ISNULL(SUM(b.Debit),0) - ISNULL(SUM(b.Credit),0) as Balance
+            FROM o2Account a
+            LEFT JOIN o2AccountTransactionBody b ON a.ID = b.AccountID
+            WHERE a.Deleted=0
+            GROUP BY a.Code, a.Name
+            HAVING ISNULL(SUM(b.Debit),0) != 0 OR ISNULL(SUM(b.Credit),0) != 0
+            ORDER BY a.Code
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return [{"code": r[0], "name": r[1], "debit": float(r[2]), "credit": float(r[3]), "balance": float(r[4])} for r in rows]
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/sql/cash")
+async def sql_cash(request: Request, company: str = "BilancBoldConsulting"):
+    await get_user(request)
+    try:
+        conn = get_sql_conn(company)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT cu.Name as CashUnit,
+                   ISNULL(SUM(b.Debit),0) - ISNULL(SUM(b.Credit),0) as Balance
+            FROM o2CashUnit cu
+            LEFT JOIN o2AccountTransactionBody b ON b.CashUnitID = cu.ID
+            WHERE cu.Deleted=0
+            GROUP BY cu.Name
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return [{"name": r[0], "balance": float(r[1])} for r in rows]
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/sql/bank")
+async def sql_bank(request: Request, company: str = "BilancBoldConsulting"):
+    await get_user(request)
+    try:
+        conn = get_sql_conn(company)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT b.Name as Bank,
+                   ISNULL(SUM(bt.Amount),0) as TotalIn,
+                   ISNULL(SUM(bt.AmountOut),0) as TotalOut,
+                   ISNULL(SUM(bt.Amount),0) - ISNULL(SUM(bt.AmountOut),0) as Balance
+            FROM o2Bank b
+            LEFT JOIN o2BankTransactionHeader bt ON bt.BankID = b.ID AND bt.Deleted=0
+            WHERE b.Deleted=0
+            GROUP BY b.Name
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return [{"name": r[0], "total_in": float(r[1]), "total_out": float(r[2]), "balance": float(r[3])} for r in rows]
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/sql/client-ledger")
+async def sql_client_ledger(request: Request, company: str = "BilancBoldConsulting", client_name: str = ""):
+    await get_user(request)
+    try:
+        conn = get_sql_conn(company)
+        cursor = conn.cursor()
+        query = """
+            SELECT c.Name as Client,
+                   ISNULL(SUM(s.TotalWithVAT),0) as TotalInvoiced,
+                   ISNULL(SUM(s.AmountPaid),0) as TotalPaid,
+                   ISNULL(SUM(s.TotalWithVAT),0) - ISNULL(SUM(s.AmountPaid),0) as Balance,
+                   COUNT(s.ID) as InvoiceCount
+            FROM o2Client c
+            LEFT JOIN o2SalesDocHeader s ON s.ClientID = c.ID AND s.Deleted=0
+            WHERE c.Deleted=0
+        """
+        if client_name:
+            query += f" AND c.Name LIKE '%{client_name}%'"
+        query += " GROUP BY c.Name ORDER BY Balance DESC"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        conn.close()
+        return [{"client": r[0], "invoiced": float(r[1]), "paid": float(r[2]), "balance": float(r[3]), "invoices": r[4]} for r in rows]
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/sql/supplier-ledger")
+async def sql_supplier_ledger(request: Request, company: str = "BilancBoldConsulting"):
+    await get_user(request)
+    try:
+        conn = get_sql_conn(company)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT s.Name as Supplier,
+                   ISNULL(SUM(p.TotalWithVAT),0) as TotalInvoiced,
+                   ISNULL(SUM(p.AmountPaid),0) as TotalPaid,
+                   ISNULL(SUM(p.TotalWithVAT),0) - ISNULL(SUM(p.AmountPaid),0) as Balance,
+                   COUNT(p.ID) as InvoiceCount
+            FROM o2Supplier s
+            LEFT JOIN o2PurchaseDocHeader p ON p.SupplierID = s.ID AND p.Deleted=0
+            WHERE s.Deleted=0
+            GROUP BY s.Name
+            ORDER BY Balance DESC
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return [{"supplier": r[0], "invoiced": float(r[1]), "paid": float(r[2]), "balance": float(r[3]), "invoices": r[4]} for r in rows]
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/sql/pnl")
+async def sql_pnl(request: Request, company: str = "BilancBoldConsulting", month: int = 0, year: int = 0):
+    await get_user(request)
+    try:
+        conn = get_sql_conn(company)
+        cursor = conn.cursor()
+        
+        where = "WHERE s.Deleted=0"
+        if month > 0 and year > 0:
+            where += f" AND MONTH(s.DocDate)={month} AND YEAR(s.DocDate)={year}"
+        
+        cursor.execute(f"""
+            SELECT ISNULL(SUM(s.Total),0) as Revenue,
+                   ISNULL(SUM(s.TotalWithVAT),0) as RevenueWithVAT,
+                   ISNULL(SUM(s.AmountPaid),0) as Collected
+            FROM o2SalesDocHeader s {where}
+        """)
+        sales = cursor.fetchone()
+        
+        where2 = "WHERE p.Deleted=0"
+        if month > 0 and year > 0:
+            where2 += f" AND MONTH(p.DocDate)={month} AND YEAR(p.DocDate)={year}"
+        
+        cursor.execute(f"""
+            SELECT ISNULL(SUM(p.Total),0) as Expenses,
+                   ISNULL(SUM(p.TotalWithVAT),0) as ExpensesWithVAT,
+                   ISNULL(SUM(p.AmountPaid),0) as Paid
+            FROM o2PurchaseDocHeader p {where2}
+        """)
+        purchases = cursor.fetchone()
+        conn.close()
+        
+        revenue = float(sales[0])
+        expenses = float(purchases[0])
+        return {
+            "revenue": revenue,
+            "revenue_with_vat": float(sales[1]),
+            "collected": float(sales[2]),
+            "expenses": expenses,
+            "expenses_with_vat": float(purchases[1]),
+            "expenses_paid": float(purchases[2]),
+            "gross_profit": revenue - expenses,
+            "period": f"{month}/{year}" if month > 0 else "total"
         }
     except Exception as e:
         raise HTTPException(500, str(e))
