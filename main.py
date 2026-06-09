@@ -217,9 +217,12 @@ Ke akses DIREKT ne keto te dhena nga SQL Server:
 - /sql/supplier-ledger — kartela e furnitorit (kreditoret)
 - /sql/accounts — kontimet dhe plani kontabel
 
-Kur vjen [KONTEKST BILANC] — ato jane te dhenat REALE nga SQL Server, jo te fabrikuara.
-KURRE thuaj "nuk kam akses" ose fabrike te dhena — vetem perdor ato qe vijn nga sistemi.
-Nese te dhena mungojne — thuaj "nuk ka te dhena per kete periudhe" jo shpik vlera.{employee_after}"""
+Kur vjen [KONTEKST BILANC] — ato jane te dhenat REALE nga SQL Server. Perdori VETEM ato.
+KURRE SHPIK shifra financiare — kjo eshte gabim i rende per nje biznes real.
+Nese NUK vjen [KONTEKST BILANC] dhe pyetet per shifra financiare — thuaj SAKTESISHT:
+"Nuk mora te dhena nga sistemi per kete moment. Provo perseri ose kontrollo nese ngrok tunnel eshte aktiv."
+KURRE thuaj "arka eshte X€" ose "banka eshte Y€" pa [KONTEKST BILANC] ne mesazh.
+Shifrat financiare pa kontekst = gabim i papranueshme.{employee_after}"""
 
 # ─── CHAT ────────────────────────────────────────────────
 class ChatRequest(BaseModel):
