@@ -397,10 +397,16 @@ function getMonthYear(text) {
 
 function detectBilancQuery(text) {
   var lower = text.toLowerCase();
-  if (/sa kompani|sa klient|kemi.*kompani|kompanit|permbledh|summary/.test(lower)) return 'sql-summary';
-  if (/liber.*shitj|librin.*shitj|shitjet|fatur.*shitj|fature.*fundit|fatura|shitje/.test(lower)) return 'sql-sales';
-  if (/liber.*blerj|librin.*blerj|blerjet|blerje|furnitor/.test(lower)) return 'sql-purchases';
-  if (/klient|liste|kallxom|shfaq/.test(lower)) return 'sql-clients';
+  if (/sa kompani|sa klient|kemi.*kompani|kompanit/.test(lower)) return 'sql-summary';
+  if (/profit|loss|p&l|fitim|humbje|rezultat/.test(lower)) return 'sql-pnl';
+  if (/banka|bankes|gjendj.*bank|harmonizim/.test(lower)) return 'sql-bank';
+  if (/arka|arkes|gjendj.*ark|cash/.test(lower)) return 'sql-cash';
+  if (/kartela.*klient|debitor|klient.*kartela/.test(lower)) return 'sql-client-ledger';
+  if (/kartela.*furnitor|kreditor|furnitor.*kartela/.test(lower)) return 'sql-supplier-ledger';
+  if (/liber.*shitj|shitjet|fatura|shitje/.test(lower)) return 'sql-sales';
+  if (/liber.*blerj|blerjet|blerje|furnitor/.test(lower)) return 'sql-purchases';
+  if (/klient|liste|kallxom klienta/.test(lower)) return 'sql-clients';
+  if (/kontime|llogari|account/.test(lower)) return 'sql-accounts';
   return null;
 }
 
@@ -408,16 +414,13 @@ async function queryBilanc(type, text) {
   try {
     var company = getCompanyDB(text || '');
     var my = getMonthYear(text || '');
-    var url = '/' + type + '?company=' + company;
-    if (type === 'sql-summary') url = '/sql/summary?company=' + company;
-    if (type === 'sql-clients') url = '/sql/clients?company=' + company;
-    if (type === 'sql-sales') {
-      url = '/sql/sales?company=' + company;
+    var url = '/sql/' + type.replace('sql-','') + '?company=' + company;
+    if (type === 'sql-sales' || type === 'sql-purchases' || type === 'sql-pnl') {
       if (my.month > 0) url += '&month=' + my.month + '&year=' + my.year;
     }
-    if (type === 'sql-purchases') {
-      url = '/sql/purchases?company=' + company;
-      if (my.month > 0) url += '&month=' + my.month + '&year=' + my.year;
+    if (type === 'sql-client-ledger') {
+      var clientMatch = text.match(/(?:klient[a-z]*\s+|kartela\s+)([A-Za-z\s]+?)(?:\s+ne|\s+per|$)/i);
+      if (clientMatch) url += '&client_name=' + encodeURIComponent(clientMatch[1].trim());
     }
     var res = await fetch(url, {headers: authHeaders()});
     if (!res.ok) return null;
