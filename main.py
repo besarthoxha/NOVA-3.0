@@ -775,7 +775,7 @@ async def sql_bank(request: Request, company: str = "BilancBoldConsulting"):
                    ISNULL(SUM(CASE WHEN bt.isPayment=1 THEN bt.Amount ELSE 0 END),0) as TotalOut,
                    ISNULL(SUM(CASE WHEN bt.isPayment=0 THEN bt.Amount ELSE -bt.Amount END),0) as Balance
             FROM o2Bank b
-            LEFT JOIN o2BankTransactionHeader bt ON bt.BankID = b.ID AND bt.Deleted=0
+            LEFT JOIN o2BankTransactionHeader bt ON bt.ServiceUnitID = b.ID AND bt.Deleted=0
             WHERE b.Deleted=0
             GROUP BY b.Name
         """)
