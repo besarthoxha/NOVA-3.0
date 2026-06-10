@@ -605,3 +605,63 @@ async def root(): return FileResponse("index.html")
 
 if __name__ == "__main__":
     import uvicorn; uvicorn.run(app,host="0.0.0.0",port=8080)
+
+# ─── ONEDRIVE ────────────────────────────────────────────
+import httpx as _httpx
+
+@app.get("/onedrive/files")
+async def onedrive_files(request: Request, folder_id: str = "root"):
+    await get_user(request)
+    token = os.environ.get('ONEDRIVE_TOKEN', '')
+    if not token:
+        raise HTTPException(400, "ONEDRIVE_TOKEN nuk eshte konfiguruar")
+    try:
+        url = f"https://graph.microsoft.com/v1.0/me/drive/{folder_id}/children" if folder_id == "root" else f"https://graph.microsoft.com/v1.0/me/drive/items/{folder_id}/children"
+        async with _httpx.AsyncClient() as http:
+            res = await http.get(url, headers={"Authorization": f"Bearer {token}"})
+        if res.status_code == 401:
+            raise HTTPException(401, "Token OneDrive skadoi. Rifresho nga Graph Explorer.")
+        data = res.json()
+        items = []
+        for item in data.get("value", []):
+            items.append({
+                "id": item["id"],
+                "name": item["name"],
+                "type": "folder" if "folder" in item else "file",
+                "size": item.get("size", 0),
+                "modified": item.get("lastModifiedDateTime", ""),
+                "url": item.get("webUrl", ""),
+                "children": item.get("folder", {}).get("childCount", 0)
+            })
+        return {"items": items, "total": len(items)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/onedrive/search")
+async def onedrive_search(request: Request, q: str = ""):
+    await get_user(request)
+    token = os.environ.get('ONEDRIVE_TOKEN', '')
+    if not token:
+        raise HTTPException(400, "ONEDRIVE_TOKEN nuk eshte konfiguruar")
+    try:
+        async with _httpx.AsyncClient() as http:
+            res = await http.get(
+                f"https://graph.microsoft.com/v1.0/me/drive/root/search(q='{q}')",
+                headers={"Authorization": f"Bearer {token}"}
+            )
+        data = res.json()
+        items = []
+        for item in data.get("value", []):
+            items.append({
+                "id": item["id"],
+                "name": item["name"],
+                "type": "folder" if "folder" in item else "file",
+                "size": item.get("size", 0),
+                "modified": item.get("lastModifiedDateTime", ""),
+                "url": item.get("webUrl", "")
+            })
+        return {"items": items, "total": len(items)}
+    except Exception as e:
+        raise HTTPException(500, str(e))
