@@ -6,8 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Nova">
-<meta name="theme-color" content="#060e1e">
 <title>Nova 3.0 — BOLD</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -101,8 +99,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div id="hdr-actions">
       <input type="file" id="file-inp" accept=".xlsx,.xls,.pdf,.txt,.csv,.docx" style="display:none" onchange="uploadFile(this)">
-      <button class="hbtn" id="voice-enable-btn" onclick="enableVoice()" style="background:rgba(212,175,55,0.15);color:var(--gold);border-color:rgba(212,175,55,0.4)">&#128266; zër</button>
-      <button class="hbtn" onclick="refreshOneDrive()" title="Rifresho OneDrive token">&#9729; OD</button>
+      <button class="hbtn" id="voice-enable-btn" onclick="enableVoice()" style="background:rgba(212,175,55,0.15);color:var(--gold);border-color:rgba(212,175,55,0.4)">&#128266; zer</button>
+      <button class="hbtn" onclick="refreshOD()" title="Rifresho OneDrive">&#9729; OD</button>
       <button class="hbtn" onclick="document.getElementById('file-inp').click()">ngarko</button>
       <button class="hbtn" onclick="clearChat()">reset</button>
       <button class="hbtn danger" onclick="doLogout()">dil</button>
@@ -110,14 +108,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
   <div id="mbar"><span id="mtags" style="font-size:10px;font-family:monospace;color:var(--text3)">mem://empty</span></div>
   <div id="msgs"></div>
-  <div id="vstatus">duke dëgjuar...</div>
+  <div id="vstatus">duke degjuar...</div>
   <div id="qrow">
-    <button class="qb" onclick="sq('Sa ndermardhe kemi dhe cilat jane?')">ndërmardhet</button>
-    <button class="qb" onclick="sq('Llogarite e arketushme — kush na ka borxh?')">arkëtueshme</button>
-    <button class="qb" onclick="sq('Llogarite e pagueshme — kujt i kemi borxh?')">pagueshme</button>
+    <button class="qb" onclick="sq('Sa ndermardhe kemi dhe cilat jane?')">ndermardhjet</button>
+    <button class="qb" onclick="sq('Llogarite e arketushme')">arketushme</button>
+    <button class="qb" onclick="sq('Llogarite e pagueshme')">pagueshme</button>
     <button class="qb" onclick="sq('Profit and loss per muajin aktual')">P&L</button>
     <button class="qb" onclick="sq('Gjendja e arkes dhe bankes')">arka/banka</button>
-    <button class="qb" onclick="sq('Cfare di per mua?')">memoria</button>
+    <button class="qb" onclick="sq('Cfare ka ne OneDrive?')">OneDrive</button>
   </div>
   <div id="iarea">
     <textarea id="inp" placeholder="Shkruaj..." rows="1"></textarea>
@@ -135,24 +133,30 @@ var busy = false;
 var recognition = null;
 var isListening = false;
 var voiceEnabled = false;
+var companiesList = [];
 var msgsEl = document.getElementById('msgs');
 var inpEl = document.getElementById('inp');
 var sbEl = document.getElementById('send-btn');
 
-// Lista e ndermardhjeve — merret dinamikisht nga serveri
-var companiesList = [];
+// OneDrive folder IDs
+var OD_FOLDERS = {
+  'besart': '77BD7A2302C4C4AF!4066',
+  'drini':  '77BD7A2302C4C4AF!s3ed613a861dc42f0a6b55a84c5e31657',
+  'erblini':'77BD7A2302C4C4AF!1131',
+  'meti':   '77BD7A2302C4C4AF!123',
+  'tjera':  '77BD7A2302C4C4AF!sfa24f199b6e8460893947c6aac537045'
+};
 
 function ah() { return {'Content-Type':'application/json','Authorization':'Bearer '+token}; }
 function api(path, opts) {
   opts = opts || {};
-  opts.headers = Object.assign({}, ah(), opts.headers || {});
-  return fetch(BASE + path, opts);
+  opts.headers = Object.assign({}, ah(), opts.headers||{});
+  return fetch(BASE+path, opts);
 }
 
-// ─── LOGIN ───────────────────────────────────────────────
 window.addEventListener('load', function() {
-  var savedUser = localStorage.getItem('nova_user');
-  if (token && savedUser) { try { currentUser = JSON.parse(savedUser); } catch(e) {} }
+  var su = localStorage.getItem('nova_user');
+  if (token && su) { try { currentUser = JSON.parse(su); } catch(e){} }
   if (token && currentUser) {
     api('/me').then(function(r){return r.json();}).then(function(d){
       if (d && d.username) { currentUser=d; localStorage.setItem('nova_user',JSON.stringify(d)); loadApp(); }
@@ -161,45 +165,38 @@ window.addEventListener('load', function() {
   } else { showLogin(); }
 });
 
-function showLogin() { document.getElementById('login').style.display='flex'; initVoice(); }
+function showLogin(){ document.getElementById('login').style.display='flex'; initVoice(); }
+document.getElementById('l-pass').addEventListener('keydown',function(e){ if(e.key==='Enter') doLogin(); });
 
-document.getElementById('l-pass').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
-
-function doLogin() {
-  var username = document.getElementById('l-user').value.trim().toLowerCase();
-  var password = document.getElementById('l-pass').value;
-  var errEl = document.getElementById('l-err');
-  var btn = document.querySelector('.l-btn');
-  errEl.style.display='none'; btn.textContent='Duke hyrë...'; btn.disabled=true;
-  fetch(BASE+'/login',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({username:username,password:password})})
+function doLogin(){
+  var u=document.getElementById('l-user').value.trim().toLowerCase();
+  var p=document.getElementById('l-pass').value;
+  var err=document.getElementById('l-err');
+  var btn=document.querySelector('.l-btn');
+  err.style.display='none'; btn.textContent='Duke hyre...'; btn.disabled=true;
+  fetch(BASE+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
   .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d};});})
   .then(function(rd){
     btn.textContent='Hyrje'; btn.disabled=false;
-    if(!rd.ok){errEl.textContent=rd.data.detail||'Gabim';errEl.style.display='block';return;}
+    if(!rd.ok){err.textContent=rd.data.detail||'Gabim';err.style.display='block';return;}
     token=rd.data.token; currentUser=rd.data.user;
     localStorage.setItem('nova_token',token);
     localStorage.setItem('nova_user',JSON.stringify(rd.data.user));
     document.getElementById('login').style.display='none';
     loadApp();
-  }).catch(function(){
-    btn.textContent='Hyrje'; btn.disabled=false;
-    errEl.textContent='Problem lidhjeje'; errEl.style.display='block';
-  });
+  }).catch(function(){ btn.textContent='Hyrje'; btn.disabled=false; err.textContent='Problem lidhjeje'; err.style.display='block'; });
 }
 
-function loadApp() {
-  // Ngarko memory, history dhe kompanitë njëherësh
+function loadApp(){
   Promise.all([
     api('/memory').then(function(r){return r.json();}).catch(function(){return null;}),
     api('/history').then(function(r){return r.json();}).catch(function(){return null;}),
     api('/sql/companies').then(function(r){return r.json();}).catch(function(){return null;})
-  ]).then(function(results){
-    if(results[0] && !results[0].error) mem=results[0];
-    if(results[1] && results[1].length>0) hist=results[1].map(function(m){return{role:m.role,content:m.content};});
-    if(results[2] && results[2].companies) companiesList=results[2].companies;
+  ]).then(function(res){
+    if(res[0]&&!res[0].error) mem=res[0];
+    if(res[1]&&res[1].length>0) hist=res[1].map(function(m){return{role:m.role,content:m.content};});
+    if(res[2]&&res[2].companies) companiesList=res[2].companies;
   });
-
   if(currentUser){
     var role=currentUser.role;
     var badge=document.getElementById('role-badge');
@@ -211,7 +208,7 @@ function loadApp() {
   document.getElementById('app').style.display='flex';
   var h=new Date().getHours();
   var n=currentUser?(currentUser.username==='besart'?'Zotëri Hoxha':currentUser.full_name.split(' ')[0]):'Boss';
-  addMsg('nova', h>=9&&h<17?n+', mirëdita. Gati për punë.':n+', çka kemi?');
+  addMsg('nova',h>=9&&h<17?n+', miredita. Gati per pune.':n+', cka kemi?');
   inpEl.focus();
 }
 
@@ -227,17 +224,13 @@ function doLogout(){
 function clearChat(){
   hist=[]; msgsEl.innerHTML='';
   api('/clear-history',{method:'POST'});
-  addMsg('nova','Bisedë e re. Çka kemi?');
+  addMsg('nova','Bisede e re. Cka kemi?');
 }
 
-// ─── MEMORY ──────────────────────────────────────────────
 function updMem(){
-  var all=(mem.notes||[]).concat((mem.clients||[]).map(function(c){return c.name||String(c);}))
-    .concat((mem.family||[]).map(function(f){return f.name||String(f);}));
+  var all=(mem.notes||[]).concat((mem.clients||[]).map(function(c){return c.name||String(c);})).concat((mem.family||[]).map(function(f){return f.name||String(f);}));
   var el=document.getElementById('mtags');
-  el.innerHTML=all.length===0
-    ?'<span style="font-size:10px;font-family:monospace;color:var(--text3)">mem://empty</span>'
-    :all.slice(0,8).map(function(n){return'<span class="mcard"><span class="mcard-dot"></span>'+String(n).slice(0,24)+'</span>';}).join('');
+  el.innerHTML=all.length===0?'<span style="font-size:10px;font-family:monospace;color:var(--text3)">mem://empty</span>':all.slice(0,8).map(function(n){return'<span class="mcard"><span class="mcard-dot"></span>'+String(n).slice(0,24)+'</span>';}).join('');
 }
 function saveMem(){ api('/memory',{method:'POST',body:JSON.stringify(mem)}); }
 function chkMem(text){
@@ -247,24 +240,26 @@ function chkMem(text){
   }
 }
 
-// ─── GJETJA E KOMPANISE — 100% DINAMIKE ─────────────────
-function findCompany(text) {
+function refreshOD(){
+  var t=prompt('Token i ri nga graph-explorer (Access token tab):');
+  if(!t||!t.trim()) return;
+  api('/onedrive/token',{method:'POST',body:JSON.stringify({token:t.trim()})})
+  .then(function(r){return r.json();})
+  .then(function(d){ addMsg('nova',d.ok?'OneDrive u rifreshua.':'Token i pavlefshem.'); })
+  .catch(function(){ addMsg('nova','Problem me token-in.'); });
+}
+
+function findCompany(text){
   if(!companiesList.length) return null;
-  var lower = text.toLowerCase();
-
-  // Match i saktë i plotë
+  var l=text.toLowerCase();
   for(var i=0;i<companiesList.length;i++){
-    var c=companiesList[i];
-    if(lower.indexOf(c.emri_lower)!==-1) return c;
+    if(l.indexOf(companiesList[i].emri_lower)!==-1) return companiesList[i];
   }
-
-  // Match i pjesshëm — fjale individuale
-  var words = lower.split(/\s+/);
+  var words=l.split(/\s+/);
   for(var w=0;w<words.length;w++){
     if(words[w].length<3) continue;
     for(var i=0;i<companiesList.length;i++){
-      var c=companiesList[i];
-      if(c.emri_lower.indexOf(words[w])!==-1) return c;
+      if(companiesList[i].emri_lower.indexOf(words[w])!==-1) return companiesList[i];
     }
   }
   return null;
@@ -274,123 +269,110 @@ function getMonthYear(text){
   var months={janar:1,shkurt:2,mars:3,prill:4,'maj':5,qershor:6,korrik:7,gusht:8,shtator:9,tetor:10,nentor:11,dhjetor:12};
   var result={month:0,year:0};
   for(var m in months){ if(text.toLowerCase().indexOf(m)!==-1){result.month=months[m];break;} }
-  var ym=text.match(/20\d\d/); if(ym) result.year=parseInt(ym[0]);
+  var ym=text.match(/20\d\d/);
+  if(ym) result.year=parseInt(ym[0]);
   if(result.month>0&&result.year===0) result.year=new Date().getFullYear();
   return result;
 }
 
-// ─── DETEKTIMI I PYETJEVE BILANC ────────────────────────
-function detectBilancQuery(text){
+function detectQuery(text){
   var l=text.toLowerCase();
-  if(/onedrive|dosje.*meti|dosje.*besart|dosje.*drini|kerko.*file|kerko.*dokument|hyn te meti|hyn te besart|shiko.*onedrive|file.*onedrive|c ka ne onedrive|cfare ka/.test(l)) return 'onedrive';
-  if(/sa ndermardh|sa kompani|cilat jan|lista.*kompan|kompanit/.test(l)) return 'companies';
-  if(/arketushm|debitor|kush na ka borxh|nuk ka paguar/.test(l)) return 'receivables';
-  if(/pagueshm|kreditor|kujt i kemi borxh|i detyrohem/.test(l)) return 'payables';
-  if(/profit|loss|p&l|fitim|humbj|rezultat|te ardhura|shpenzim/.test(l)) return 'pnl';
-  if(/permbledhj|overview|snapshot|si eshte kompania/.test(l)) return 'summary';
-  if(/banka|bankes|harmonizim|procredit|npe|raiffeisen/.test(l)) return 'bank';
-  if(/arka|arkes|cash/.test(l)&&/banka|bankes/.test(l)) return 'cash-bank';
-  if(/arka|arkes|cash/.test(l)) return 'cash';
-  if(/shitj|fatura.*shitj|liber.*shitj/.test(l)) return 'sales';
-  if(/blerj|fatura.*blerj|liber.*blerj/.test(l)) return 'purchases';
+  // OneDrive - kontrollo fillimisht
+  if(/onedrive|dosje|cfare ka|hyn te |hyn tek |lexo|gjej.*file|gjej.*excel|gjej.*dokument|shiko.*file/.test(l)) return 'onedrive';
+  // SQL
+  if(/sa ndermardh|sa kompani|cilat jan/.test(l)) return 'companies';
+  if(/arketushm|debitor|kush na ka borxh/.test(l)) return 'receivables';
+  if(/pagueshm|kreditor|kujt i kemi borxh/.test(l)) return 'payables';
+  if(/profit|loss|p&l|fitim|rezultat/.test(l)) return 'pnl';
+  if(/permbledhj|overview/.test(l)) return 'summary';
+  if(/banka|bankes|harmonizim/.test(l)&&!/arka/.test(l)) return 'bank';
+  if(/arka/.test(l)&&/banka/.test(l)) return 'cash-bank';
+  if(/arka|arkes/.test(l)) return 'cash';
+  if(/shitj|fatura.*shitj/.test(l)) return 'sales';
+  if(/blerj|fatura.*blerj/.test(l)) return 'purchases';
   if(/klient|liste.*klient/.test(l)) return 'clients';
-  // Nese permend nje kompani specifike pa tip te caktuar — merr summary
   if(findCompany(text)) return 'summary';
-  // OneDrive
   return null;
 }
 
-async function queryBilanc(type, text){
+async function queryData(type, text){
   try{
-    var company = findCompany(text);
-    var companyParam = company ? '?company='+encodeURIComponent(company.db_name) : '';
-    var my = getMonthYear(text);
-
-    if(type==='companies'){
-      var r=await api('/sql/companies');
-      if(r.ok){ var d=await r.json(); companiesList=d.companies||[]; return d; }
-      return null;
-    }
-
     if(type==='onedrive'){
-      var folderMap={
-        'besart':'77BD7A2302C4C4AF!4066',
-        'drini':'77BD7A2302C4C4AF!s3ed613a861dc42f0a6b55a84c5e31657',
-        'erblini':'77BD7A2302C4C4AF!1131',
-        'meti':'77BD7A2302C4C4AF!123',
-        'tjera':'77BD7A2302C4C4AF!sfa24f199b6e8460893947c6aac537045'
-      };
+      var l=text.toLowerCase();
 
-      // Kerkim me emrin e fajllit — kerko dhe lexo automatikisht
-      var searchMatch=text.match(/(?:kerko|gjej|gjejme|search|gjejne|hap|lexo)\s+["']?([^"'
-]{3,60})["']?/i);
-      if(searchMatch){
-        var q=searchMatch[1].trim();
-        // Kufizo ne dosje specifike nese permendet
-        var folderPrefix='';
-        for(var fn in folderMap){
-          if(text.toLowerCase().indexOf(fn)!==-1){
-            folderPrefix=fn.toUpperCase()+'/';
-            break;
-          }
+      // Kerkim + auto-lexim
+      var keywords=['gjej','kerko','search','hap','lexo','gjejme','gjejne'];
+      var searchTerm=null;
+      for(var k=0;k<keywords.length;k++){
+        var idx=l.indexOf(keywords[k]);
+        if(idx!==-1){
+          searchTerm=text.substring(idx+keywords[k].length).trim();
+          // Hiq fjale si "te","tek","ne","file","excel" nga fillimi
+          searchTerm=searchTerm.replace(/^(te|tek|ne|file|excel|dosjen|dosjene)\s+/i,'').trim();
+          // Merr vetem 50 karakteret e para
+          if(searchTerm.length>50) searchTerm=searchTerm.substring(0,50);
+          break;
         }
+      }
+
+      if(searchTerm&&searchTerm.length>2){
         // Kerko
-        var sr=await api('/onedrive/search?q='+encodeURIComponent(q));
+        var sr=await api('/onedrive/search?q='+encodeURIComponent(searchTerm));
         if(sr.ok){
           var sd=await sr.json();
           var files=(sd.items||[]).filter(function(i){return i.type==='file';});
           if(files.length>0){
-            // Auto-lexo fajllin e pare qe gjendet
-            var firstFile=files[0];
-            var rr=await api('/onedrive/read?file_id='+encodeURIComponent(firstFile.id));
+            // Auto-lexo fajllin e pare
+            var f=files[0];
+            var rr=await api('/onedrive/read?file_id='+encodeURIComponent(f.id));
             if(rr.ok){
               var rd=await rr.json();
-              return {found: firstFile.name, file_id: firstFile.id, url: firstFile.url, content: rd.content};
+              return {found:f.name,id:f.id,url:f.url,content:rd.content};
             }
-            return {found: firstFile.name, file_id: firstFile.id, url: firstFile.url, content: 'Nuk munda ta lexoj permbajtjen.'};
+            return {found:f.name,id:f.id,url:f.url};
           }
-          return {search: q, items: sd.items, message: 'Nuk u gjet fajll me kete emer.'};
+          return {search:searchTerm,results:sd.items,message:'Nuk u gjet.'};
         }
-      }
-
-      // Lexim direkt me file_id
-      var fileIdMatch=text.match(/file[_-]?id[:\s]+([A-Za-z0-9!s]+)/i);
-      if(fileIdMatch){
-        var r=await api('/onedrive/read?file_id='+encodeURIComponent(fileIdMatch[1]));
-        if(r.ok) return await r.json();
       }
 
       // Hap dosje specifike
-      var odUrl='/onedrive/files';
-      for(var fname in folderMap){
-        if(text.toLowerCase().indexOf(fname)!==-1){
-          odUrl='/onedrive/files?folder_id='+folderMap[fname];
-          break;
+      for(var fn in OD_FOLDERS){
+        if(l.indexOf(fn)!==-1){
+          var fr=await api('/onedrive/files?folder_id='+OD_FOLDERS[fn]);
+          if(fr.ok) return await fr.json();
         }
       }
-      var r=await api(odUrl);
+
+      // Root
+      var r=await api('/onedrive/files');
       if(r.ok) return await r.json();
       return null;
     }
 
+    var company=findCompany(text);
+    var cp=company?('?company='+encodeURIComponent(company.db_name)):'';
+    var my=getMonthYear(text);
+
+    if(type==='companies'){
+      var r=await api('/sql/companies');
+      if(r.ok){var d=await r.json();companiesList=d.companies||[];return d;}
+      return null;
+    }
     if(type==='cash-bank'){
-      var cash=await api('/sql/cash'+companyParam).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
-      var bank=await api('/sql/bank'+companyParam).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
+      var cash=await api('/sql/cash'+cp).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
+      var bank=await api('/sql/bank'+cp).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
       return{cash:cash,bank:bank};
     }
-
-    var url='/sql/'+type+companyParam;
+    var url='/sql/'+type+cp;
     if((type==='sales'||type==='purchases'||type==='pnl')&&my.month>0){
-      url+=(companyParam?'&':'?')+'month='+my.month+'&year='+my.year;
+      url+=(cp?'&':'?')+'month='+my.month+'&year='+my.year;
     }
-
     var res=await api(url);
     if(!res.ok) return null;
     return await res.json();
   }catch(e){return null;}
 }
 
-// ─── MESAZHET ────────────────────────────────────────────
 function addMsg(role,text){
   var w=document.createElement('div'); w.className='msg '+(role==='user'?'u':'n');
   if(role!=='user'){var a=document.createElement('div');a.className='mav';a.textContent='N';w.appendChild(a);}
@@ -408,8 +390,7 @@ function remTyp(){var t=document.getElementById('typ');if(t)t.remove();}
 
 function addExcelBtn(replyText){
   var w=document.createElement('div');w.className='dl-row';
-  var btn=document.createElement('button');btn.className='dl-btn';
-  btn.textContent='↓ excel';
+  var btn=document.createElement('button');btn.className='dl-btn';btn.textContent='xlsx';
   btn.onclick=function(){
     var title=prompt('Titulli:','Raport BOLD')||'Raport BOLD';
     downloadExcel(title,replyText);
@@ -423,43 +404,36 @@ function downloadExcel(title,text){
   var lines=text.split('\n').filter(function(l){return l.includes('|');});
   if(lines.length>2){
     body.headers=lines[0].split('|').map(function(h){return h.trim();}).filter(function(h){return h&&!h.match(/^-+$/);});
-    body.rows=lines.slice(2).map(function(l){
-      var cells=l.split('|').map(function(c){return c.trim();});
-      return cells.filter(function(c){return c;});
-    }).filter(function(r){return r.length>0;});
+    body.rows=lines.slice(2).map(function(l){return l.split('|').map(function(c){return c.trim();}).filter(function(c){return c;});}).filter(function(r){return r.length>0;});
   } else {
     body.headers=['Permbajtja'];
     body.rows=text.split('\n').filter(function(l){return l.trim();}).map(function(l){return[l];});
   }
   api('/generate/excel',{method:'POST',body:JSON.stringify(body)})
-    .then(function(r){if(!r.ok)throw new Error('Export deshtoi');return r.blob();})
-    .then(function(blob){
-      var url=URL.createObjectURL(blob);
-      var a=document.createElement('a');a.href=url;a.download=title+'.xlsx';a.click();URL.revokeObjectURL(url);
-      var msgs=msgsEl.querySelectorAll('.msg.n');
-      var last=msgs[msgs.length-1];
-      if(last&&last.querySelector('.bbl').textContent.includes('Duke gjeneruar'))last.remove();
-      addMsg('nova',title+'.xlsx u shkarkua.');
-    }).catch(function(e){addMsg('nova','Problem: '+e.message);});
+  .then(function(r){if(!r.ok)throw new Error('Export deshtoi');return r.blob();})
+  .then(function(blob){
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=title+'.xlsx';a.click();URL.revokeObjectURL(url);
+    var msgs=msgsEl.querySelectorAll('.msg.n');
+    var last=msgs[msgs.length-1];
+    if(last&&last.querySelector('.bbl').textContent.includes('Duke gjeneruar'))last.remove();
+    addMsg('nova',title+'.xlsx u shkarkua.');
+  }).catch(function(e){addMsg('nova','Problem: '+e.message);});
 }
 
-// ─── DERGIMI ─────────────────────────────────────────────
 function go(){
   var text=inpEl.value.trim(); if(!text||busy) return;
   inpEl.value=''; inpEl.style.height='auto';
   busy=true; sbEl.disabled=true;
   addMsg('user',text); chkMem(text);
   hist.push({role:'user',content:text}); showTyp();
-
-  var bilancType=detectBilancQuery(text);
-  var bilancPromise=bilancType?queryBilanc(bilancType,text):Promise.resolve(null);
-
-  bilancPromise.then(function(bilancData){
+  var qtype=detectQuery(text);
+  var qpromise=qtype?queryData(qtype,text):Promise.resolve(null);
+  qpromise.then(function(data){
     var messages=hist.slice();
-    if(bilancData){
-      var ctxLabel = bilancType==='onedrive' ? '[KONTEKST ONEDRIVE]' : '[KONTEKST BILANC — Te dhena reale nga SQL Server]';
-      var ctx=ctxLabel+':\n'+JSON.stringify(bilancData,null,2);
-      messages=hist.slice(0,-1).concat([{role:'user',content:text+'\n\n'+ctx}]);
+    if(data){
+      var label=qtype==='onedrive'?'[KONTEKST ONEDRIVE]':'[KONTEKST BILANC]';
+      messages=hist.slice(0,-1).concat([{role:'user',content:text+'\n\n'+label+':\n'+JSON.stringify(data,null,2)}]);
     }
     api('/chat',{method:'POST',body:JSON.stringify({messages:messages,memory:mem})})
     .then(function(r){return r.json();})
@@ -483,28 +457,25 @@ function uploadFile(input){
   addMsg('user','Ngarkova: '+file.name); showTyp();
   var fd=new FormData(); fd.append('file',file);
   fetch(BASE+'/upload',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd})
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d.error) throw new Error(d.error);
-      var prompt='Ngarkova "'+file.name+'". Permbajtja:\n'+d.content+'\n\nAnalizo dhe me trego cfare ka.';
-      hist.push({role:'user',content:prompt});
-      return api('/chat',{method:'POST',body:JSON.stringify({messages:hist,memory:mem})});
-    }).then(function(r){return r.json();})
-    .then(function(d){
-      var reply=d.reply||''; remTyp(); addMsg('nova',reply); speak(reply);
-      hist.push({role:'assistant',content:reply});
-    }).catch(function(e){remTyp();addMsg('nova','Problem: '+e.message);});
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.error) throw new Error(d.error);
+    var prompt='Ngarkova "'+file.name+'". Permbajtja:\n'+d.content+'\n\nAnalizo dhe me trego cfare ka.';
+    hist.push({role:'user',content:prompt});
+    return api('/chat',{method:'POST',body:JSON.stringify({messages:hist,memory:mem})});
+  }).then(function(r){return r.json();})
+  .then(function(d){var reply=d.reply||'';remTyp();addMsg('nova',reply);speak(reply);hist.push({role:'assistant',content:reply});})
+  .catch(function(e){remTyp();addMsg('nova','Problem: '+e.message);});
   input.value='';
 }
 
 function sq(t){inpEl.value=t;go();}
 
-// ─── ZERI ────────────────────────────────────────────────
 function enableVoice(){
   new(window.AudioContext||window.webkitAudioContext)();
   voiceEnabled=true;
   document.getElementById('voice-enable-btn').style.display='none';
-  addMsg('nova','Zëri u aktivizua.');
+  addMsg('nova','Zeri u aktivizua.');
 }
 
 async function speak(text){
@@ -523,17 +494,6 @@ function speakBrowser(text){
   window.speechSynthesis.speak(utt);
 }
 
-function refreshOneDrive(){
-  var t=prompt('Shto token te ri nga Graph Explorer (developer.microsoft.com/graph/graph-explorer):');
-  if(!t||!t.trim()) return;
-  api('/onedrive/token',{method:'POST',body:JSON.stringify({token:t.trim()})})
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d.ok) addMsg('nova','OneDrive u rifreshua. Token i ri aktiv.');
-      else addMsg('nova','Problem me token-in. Kontrollo dhe provo perseri.');
-    }).catch(function(){addMsg('nova','Problem me token-in.');});
-}
-
 inpEl.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();go();}});
 inpEl.addEventListener('input',function(){inpEl.style.height='auto';inpEl.style.height=Math.min(inpEl.scrollHeight,100)+'px';});
 
@@ -542,16 +502,19 @@ function initVoice(){
   if(!SR){document.getElementById('mic-btn').style.display='none';return;}
   recognition=new SR();recognition.lang='sq-AL';recognition.continuous=false;recognition.interimResults=false;
   recognition.onresult=function(e){inpEl.value=e.results[0][0].transcript;stopListening();go();};
-  recognition.onerror=function(){stopListening();};recognition.onend=function(){stopListening();};
+  recognition.onerror=function(){stopListening();};
+  recognition.onend=function(){stopListening();};
 }
 function toggleVoice(){
   if(isListening){stopListening();return;}
-  isListening=true;document.getElementById('mic-btn').classList.add('listening');
+  isListening=true;
+  document.getElementById('mic-btn').classList.add('listening');
   document.getElementById('vstatus').style.display='block';
   if(recognition)recognition.start();
 }
 function stopListening(){
-  isListening=false;document.getElementById('mic-btn').classList.remove('listening');
+  isListening=false;
+  document.getElementById('mic-btn').classList.remove('listening');
   document.getElementById('vstatus').style.display='none';
   if(recognition){try{recognition.stop();}catch(e){}}
 }
