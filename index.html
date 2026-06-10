@@ -294,6 +294,8 @@ function detectBilancQuery(text){
   if(/klient|liste.*klient/.test(l)) return 'clients';
   // Nese permend nje kompani specifike pa tip te caktuar — merr summary
   if(findCompany(text)) return 'summary';
+  // OneDrive
+  if(/onedrive|dosje|dokument|folder|file|shkarko|ngarko.*cloud/.test(l)) return 'onedrive';
   return null;
 }
 
@@ -306,6 +308,15 @@ async function queryBilanc(type, text){
     if(type==='companies'){
       var r=await api('/sql/companies');
       if(r.ok){ var d=await r.json(); companiesList=d.companies||[]; return d; }
+      return null;
+    }
+
+    if(type==='onedrive'){
+      var odUrl='/onedrive/files';
+      var searchMatch=text.match(/(?:kerko|gjej|search)\s+(.+)/i);
+      if(searchMatch) odUrl='/onedrive/search?q='+encodeURIComponent(searchMatch[1]);
+      var r=await api(odUrl);
+      if(r.ok) return await r.json();
       return null;
     }
 
