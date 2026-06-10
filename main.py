@@ -120,7 +120,10 @@ def find_company_db(text):
             if word in c["emri_lower"]:
                 return c["db_name"], c["emri"]
     
-    # Default - kompania e pare
+    # Default - BilancBoldConsulting
+    for c in companies:
+        if "bold" in c["db_name"].lower():
+            return c["db_name"], c["emri"]
     if companies:
         return companies[0]["db_name"], companies[0]["emri"]
     return "master", "E panjohur"
