@@ -28,7 +28,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .l-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:8px;color:#0a1628;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.08em;transition:all .2s;text-transform:uppercase}
 .l-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(212,175,55,0.3)}
 .l-err{font-family:'DM Mono',monospace;font-size:11px;color:var(--red);text-align:center;display:none;padding:8px;background:rgba(239,68,68,0.08);border-radius:6px;border:0.5px solid rgba(239,68,68,0.2)}
-#app{display:none;width:560px;height:94vh;max-height:800px;flex-direction:column;background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 0 80px rgba(212,175,55,0.06)}
+#app{display:none;width:580px;height:94vh;max-height:820px;flex-direction:column;background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 0 80px rgba(212,175,55,0.06)}
 #app::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);z-index:1}
 #hdr{padding:16px 20px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,var(--surface2),var(--surface));flex-shrink:0}
 #av{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:#0a1628;flex-shrink:0}
@@ -50,11 +50,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 #msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
 #msgs::-webkit-scrollbar{width:3px}
 #msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.msg{display:flex;gap:10px;max-width:92%;animation:fi .25s ease}
+.msg{display:flex;gap:10px;max-width:94%;animation:fi .25s ease}
 @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .msg.u{align-self:flex-end;flex-direction:row-reverse}
 .msg.n{align-self:flex-start}
-.bbl{padding:11px 15px;border-radius:14px;font-size:13.5px;line-height:1.65}
+.bbl{padding:11px 15px;border-radius:14px;font-size:13.5px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
 .n .bbl{background:var(--surface2);border:0.5px solid var(--border);border-bottom-left-radius:4px;color:var(--text)}
 .u .bbl{background:var(--user-bg);border:0.5px solid var(--user-border);border-bottom-right-radius:4px;color:#c8d8f0}
 .mav{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:#0a1628;flex-shrink:0;align-self:flex-end}
@@ -80,7 +80,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 #mic-btn.listening{background:rgba(239,68,68,0.15);border-color:var(--red);color:var(--red);animation:pulse 1.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.3)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
 #vstatus{display:none;padding:5px 16px;font-family:'DM Mono',monospace;font-size:10px;color:var(--red);border-top:0.5px solid var(--border);text-align:center;flex-shrink:0}
-@media(max-width:580px){#app{width:100vw;height:100vh;border-radius:0;border:none}#login{width:90vw;padding:28px 24px}}
+@media(max-width:600px){#app{width:100vw;height:100vh;border-radius:0;border:none}#login{width:90vw;padding:28px 24px}}
 </style>
 </head>
 <body>
@@ -89,10 +89,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="login-title">NOV<span>A</span></div>
   <div class="login-sub">Sistemi i Brendshem</div>
   <div><div class="l-label">Username</div><input class="l-inp" id="l-user" type="text" placeholder="besart" autocomplete="username" spellcheck="false"></div>
-  <div><div class="l-label">Fjalekalimi</div><input class="l-inp" id="l-pass" type="password" placeholder="00000000" autocomplete="current-password"></div>
+  <div><div class="l-label">Fjalekalimi</div><input class="l-inp" id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
   <div class="l-err" id="l-err"></div>
   <button class="l-btn" onclick="doLogin()">Hyrje</button>
 </div>
+
 <div id="app" style="display:none">
   <div id="hdr">
     <div id="av">N</div>
@@ -102,7 +103,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div id="hdr-actions">
       <input type="file" id="file-inp" accept=".xlsx,.xls,.pdf,.txt,.csv,.docx" style="display:none" onchange="uploadFile(this)">
-      <button class="hbtn" id="voice-enable-btn" onclick="enableVoice()" style="background:rgba(212,175,55,0.15);color:var(--gold);border-color:rgba(212,175,55,0.4)">&#128266; zer</button>
+      <button class="hbtn" id="voice-enable-btn" onclick="enableVoice()" style="background:rgba(212,175,55,0.15);color:var(--gold);border-color:rgba(212,175,55,0.4)">&#128266; zër</button>
       <button class="hbtn" onclick="document.getElementById('file-inp').click()">ngarko</button>
       <button class="hbtn" onclick="clearChat()">reset</button>
       <button class="hbtn danger" onclick="doLogout()">dil</button>
@@ -110,12 +111,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
   <div id="mbar"><span id="mtags" style="font-size:10px;font-family:monospace;color:var(--text3)">mem://empty</span></div>
   <div id="msgs"></div>
-  <div id="vstatus">duke degjuar...</div>
+  <div id="vstatus">duke dëgjuar...</div>
   <div id="qrow">
-    <button class="qb" onclick="sq('Cfare detyra kemi kete jave?')">detyrat</button>
-    <button class="qb" onclick="sq('Cfare deadline tatimore kemi?')">deadlines</button>
-    <button class="qb" onclick="sq('Bej nje raport per klientat')">raport</button>
-    <button class="qb" onclick="makeExcel()">excel</button>
+    <button class="qb" onclick="sq('Permbledhje e kompanise BOLD Consulting')">overview</button>
+    <button class="qb" onclick="sq('Llogarite e arketushme — kush na ka borxh?')">arkëtueshme</button>
+    <button class="qb" onclick="sq('Llogarite e pagueshme — kujt i kemi borxh?')">pagueshme</button>
+    <button class="qb" onclick="sq('Profit and loss per muajin aktual')">P&L</button>
+    <button class="qb" onclick="sq('Gjendja e arkes dhe bankes')">arka/banka</button>
     <button class="qb" onclick="sq('Cfare di per mua?')">memoria</button>
   </div>
   <div id="iarea">
@@ -124,7 +126,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="ibtn" id="send-btn" onclick="go()">&#10148;</button>
   </div>
 </div>
+
 <script>
+var BASE = 'https://chic-energy-production-90a6.up.railway.app';
 var token = localStorage.getItem('nova_token');
 var currentUser = null;
 var mem = {notes:[],clients:[],family:[]};
@@ -132,12 +136,19 @@ var hist = [];
 var busy = false;
 var recognition = null;
 var isListening = false;
+var voiceEnabled = false;
 var msgsEl = document.getElementById('msgs');
 var inpEl = document.getElementById('inp');
 var sbEl = document.getElementById('send-btn');
 
-function authHeaders() {
+function ah() {
   return {'Content-Type':'application/json','Authorization':'Bearer '+token};
+}
+
+function api(path, opts) {
+  opts = opts || {};
+  opts.headers = Object.assign({}, ah(), opts.headers || {});
+  return fetch(BASE + path, opts);
 }
 
 window.addEventListener('load', function() {
@@ -146,17 +157,17 @@ window.addEventListener('load', function() {
     try { currentUser = JSON.parse(savedUser); } catch(e) {}
   }
   if (token && currentUser) {
-    fetch('/me', {headers: authHeaders()})
+    api('/me')
       .then(function(r) { return r.json(); })
       .then(function(d) {
-        if (d && d.username) { 
-          currentUser = d; 
+        if (d && d.username) {
+          currentUser = d;
           localStorage.setItem('nova_user', JSON.stringify(d));
-          loadApp(); 
-        } else { 
-          localStorage.removeItem('nova_token'); 
+          loadApp();
+        } else {
+          localStorage.removeItem('nova_token');
           localStorage.removeItem('nova_user');
-          showLogin(); 
+          showLogin();
         }
       })
       .catch(function() { showLogin(); });
@@ -178,14 +189,18 @@ function doLogin() {
   var username = document.getElementById('l-user').value.trim().toLowerCase();
   var password = document.getElementById('l-pass').value;
   var errEl = document.getElementById('l-err');
+  var btn = document.querySelector('.l-btn');
   errEl.style.display = 'none';
-  fetch('/login', {
+  btn.textContent = 'Duke hyrë...';
+  btn.disabled = true;
+  fetch(BASE + '/login', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({username: username, password: password})
   })
   .then(function(r) { return r.json().then(function(d) { return {ok: r.ok, data: d}; }); })
   .then(function(rd) {
+    btn.textContent = 'Hyrje'; btn.disabled = false;
     if (!rd.ok) { errEl.textContent = rd.data.detail || 'Gabim'; errEl.style.display = 'block'; return; }
     token = rd.data.token;
     currentUser = rd.data.user;
@@ -194,18 +209,18 @@ function doLogin() {
     document.getElementById('login').style.display = 'none';
     loadApp();
   })
-  .catch(function() { errEl.textContent = 'Problem lidhjeje'; errEl.style.display = 'block'; });
+  .catch(function() {
+    btn.textContent = 'Hyrje'; btn.disabled = false;
+    errEl.textContent = 'Problem lidhjeje me serverin'; errEl.style.display = 'block';
+  });
 }
 
 function loadApp() {
-  fetch('/memory', {headers: authHeaders()})
-    .then(function(r) { return r.json(); })
-    .then(function(d) { if (d && !d.error) mem = d; })
-    .catch(function() {});
-  fetch('/history', {headers: authHeaders()})
-    .then(function(r) { return r.json(); })
-    .then(function(d) { if (d && d.length > 0) hist = d.map(function(m) { return {role: m.role, content: m.content}; }); })
-    .catch(function() {});
+  api('/memory').then(function(r) { return r.json(); }).then(function(d) { if (d && !d.error) mem = d; }).catch(function() {});
+  api('/history').then(function(r) { return r.json(); }).then(function(d) {
+    if (d && d.length > 0) hist = d.map(function(m) { return {role: m.role, content: m.content}; });
+  }).catch(function() {});
+
   if (currentUser) {
     var role = currentUser.role;
     var badge = document.getElementById('role-badge');
@@ -219,13 +234,12 @@ function loadApp() {
   document.getElementById('app').style.display = 'flex';
   var h = new Date().getHours();
   var n = currentUser ? (currentUser.username === 'besart' ? 'Zotëri Hoxha' : currentUser.full_name.split(' ')[0]) : 'Boss';
-  addMsg('nova', h >= 9 && h < 17 ? n + ', mirëdita. Gati për punë.' : n + ', cka kemi?');
+  addMsg('nova', h >= 9 && h < 17 ? n + ', mirëdita. Gati për punë.' : n + ', çka kemi?');
   inpEl.focus();
 }
 
 function doLogout() {
-  localStorage.removeItem('nova_token');
-  localStorage.removeItem('nova_user');
+  localStorage.removeItem('nova_token'); localStorage.removeItem('nova_user');
   token = null; currentUser = null; hist = []; mem = {notes:[],clients:[],family:[]};
   msgsEl.innerHTML = '';
   document.getElementById('app').style.display = 'none';
@@ -235,24 +249,24 @@ function doLogout() {
 
 function clearChat() {
   hist = []; msgsEl.innerHTML = '';
-  fetch('/clear-history', {method:'POST', headers: authHeaders()});
+  api('/clear-history', {method:'POST'});
   var n = currentUser ? (currentUser.username === 'besart' ? 'Boss' : currentUser.full_name.split(' ')[0]) : 'Boss';
-  addMsg('nova', 'Bisede e re. Cka kemi, ' + n + '?');
+  addMsg('nova', 'Bisedë e re. Çka kemi, ' + n + '?');
 }
 
 function updMem() {
-  var all = mem.notes.concat(mem.clients.map(function(c) { return c.name || String(c); })).concat(mem.family.map(function(f) { return f.name || String(f); }));
+  var all = (mem.notes||[]).concat((mem.clients||[]).map(function(c) { return c.name || String(c); })).concat((mem.family||[]).map(function(f) { return f.name || String(f); }));
   var el = document.getElementById('mtags');
   if (all.length === 0) {
     el.innerHTML = '<span style="font-size:10px;font-family:monospace;color:var(--text3)">mem://empty</span>';
   } else {
-    el.innerHTML = all.slice(0,8).map(function(n) { return '<span class="mcard"><span class="mcard-dot"></span>' + String(n).slice(0,24) + '</span>'; }).join('');
+    el.innerHTML = all.slice(0,8).map(function(n) {
+      return '<span class="mcard"><span class="mcard-dot"></span>' + String(n).slice(0,24) + '</span>';
+    }).join('');
   }
 }
 
-function saveMem() {
-  fetch('/memory', {method:'POST', headers: authHeaders(), body: JSON.stringify(mem)});
-}
+function saveMem() { api('/memory', {method:'POST', body: JSON.stringify(mem)}); }
 
 function chkMem(text) {
   if (/^mbaje mend/i.test(text)) {
@@ -275,112 +289,96 @@ function showTyp() {
   b.innerHTML = '<div class="dt"></div><div class="dt"></div><div class="dt"></div>';
   d.appendChild(a); d.appendChild(b); msgsEl.appendChild(d); msgsEl.scrollTop = msgsEl.scrollHeight;
 }
-
 function remTyp() { var t = document.getElementById('typ'); if (t) t.remove(); }
 
 function addDownloadButtons(replyText) {
   var w = document.createElement('div'); w.className = 'dl-row';
-  var types = [['excel','excel'],['word','word'],['pdf','pdf']];
-  types.forEach(function(tp) {
-    var type = tp[0];
-    var btn = document.createElement('button'); btn.className = 'dl-btn';
-    btn.textContent = type;
-    btn.onclick = function() {
-      var title = prompt('Titulli:', 'Dokument BOLD') || 'Dokument BOLD';
-      downloadDoc(type, title, replyText);
-    };
-    w.appendChild(btn);
-  });
+  var btn = document.createElement('button'); btn.className = 'dl-btn';
+  btn.textContent = '↓ excel';
+  btn.onclick = function() {
+    var title = prompt('Titulli:', 'Raport BOLD') || 'Raport BOLD';
+    downloadExcel(title, replyText);
+  };
+  w.appendChild(btn);
   msgsEl.appendChild(w); msgsEl.scrollTop = msgsEl.scrollHeight;
 }
 
-function downloadDoc(type, title, text) {
-  addMsg('nova', 'Duke gjeneruar ' + type + '...');
+function downloadExcel(title, text) {
+  addMsg('nova', 'Duke gjeneruar Excel...');
   var body = {title: title, subtitle: new Date().toLocaleDateString('sq'), headers:[], rows:[]};
   var lines = text.split('\n').filter(function(l) { return l.includes('|'); });
   if (lines.length > 2) {
     body.headers = lines[0].split('|').map(function(h) { return h.trim(); }).filter(function(h) { return h && !h.match(/^-+$/); });
     body.rows = lines.slice(2).map(function(l) {
       var cells = l.split('|').map(function(c) { return c.trim(); });
-      return cells.slice(1, cells.length - 1);
-    });
+      return cells.filter(function(c) { return c; });
+    }).filter(function(r) { return r.length > 0; });
   } else {
     body.headers = ['Permbajtja'];
     body.rows = text.split('\n').filter(function(l) { return l.trim(); }).map(function(l) { return [l]; });
   }
-  var endpoint = type === 'excel' ? '/generate/excel' : '/export/' + type;
-  fetch(endpoint, {method:'POST', headers: authHeaders(), body: JSON.stringify(body)})
-    .then(function(r) {
-      if (!r.ok) throw new Error('Export deshtoi');
-      return r.blob();
-    })
+  api('/generate/excel', {method:'POST', body: JSON.stringify(body)})
+    .then(function(r) { if (!r.ok) throw new Error('Export deshtoi'); return r.blob(); })
     .then(function(blob) {
       var url = URL.createObjectURL(blob);
-      var a = document.createElement('a'); a.href = url;
-      var ext = type === 'excel' ? 'xlsx' : type === 'word' ? 'docx' : 'pdf';
-      a.download = title + '.' + ext; a.click(); URL.revokeObjectURL(url);
+      var a = document.createElement('a'); a.href = url; a.download = title + '.xlsx'; a.click(); URL.revokeObjectURL(url);
       var msgs = msgsEl.querySelectorAll('.msg.n');
       var last = msgs[msgs.length-1];
       if (last && last.querySelector('.bbl').textContent.includes('Duke gjeneruar')) last.remove();
-      addMsg('nova', title + ' u shkarkua.');
+      addMsg('nova', title + '.xlsx u shkarkua.');
     })
     .catch(function(e) { addMsg('nova', 'Problem: ' + e.message); });
 }
 
-function makeExcel() {
-  var what = prompt('Cfare don ne Excel?', 'Lista e klientave me deadlines tatimore');
-  if (!what) return;
-  var title = prompt('Titulli:', 'BOLD Deklarime Qershor 2026') || 'BOLD Excel';
-  addMsg('user', 'Krijo Excel: ' + what);
-  showTyp();
-  var systemMsg = 'Gjenero VETEM JSON per Excel pa asnje tekst tjeter. Format: {"headers":["Kolona1","Kolona2"],"rows":[["v1","v2"]],"title":"titulli"}';
-  var userMsg = systemMsg + ' Krijo per: ' + what + '. Titulli: ' + title;
-  fetch('/chat', {
-    method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({messages: [{role:'user', content: userMsg}], memory: mem})
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    var reply = d.reply || '';
-    remTyp();
-    var body = {title: title, subtitle: new Date().toLocaleDateString('sq'), headers:[], rows:[]};
-    try {
-      var clean = reply.replace(/```json/g,'').replace(/```/g,'').trim();
-      var parsed = JSON.parse(clean);
-      body.headers = parsed.headers || [];
-      body.rows = parsed.rows || [];
-      body.title = parsed.title || title;
-    } catch(e) {
-      body.headers = ['Permbajtja'];
-      body.rows = reply.split('\n').filter(function(l) { return l.trim(); }).map(function(l) { return [l]; });
-    }
-    addMsg('nova', 'Duke gjeneruar Excel...');
-    return fetch('/generate/excel', {method:'POST', headers: authHeaders(), body: JSON.stringify(body)});
-  })
-  .then(function(r) {
-    if (!r.ok) throw new Error('Export deshtoi');
-    return r.blob();
-  })
-  .then(function(blob) {
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a'); a.href = url; a.download = title + '.xlsx'; a.click(); URL.revokeObjectURL(url);
-    var msgs = msgsEl.querySelectorAll('.msg.n');
-    var last = msgs[msgs.length-1];
-    if (last && last.querySelector('.bbl').textContent.includes('Duke gjeneruar')) last.remove();
-    addMsg('nova', title + '.xlsx u shkarkua.');
-  })
-  .catch(function(e) { remTyp(); addMsg('nova', 'Problem: ' + e.message); });
+// ─── DETEKTIMI I PYETJEVE BILANC ────────────────────────
+function detectBilancQuery(text) {
+  var l = text.toLowerCase();
+
+  // Llogarite e arketushme
+  if (/arketushm|debitor|kush na ka borxh|kush nuk ka paguar|na ka borxh/.test(l)) return 'receivables';
+
+  // Llogarite e pagueshme
+  if (/pagueshm|kreditor|kujt i kemi borxh|kemi borxh|i detyrohem/.test(l)) return 'payables';
+
+  // P&L
+  if (/profit|loss|p&l|fitim|humbj|rezultat|te ardhura|shpenzim/.test(l)) return 'pnl';
+
+  // Summary / overview
+  if (/permbledhj|overview|snapshot|gjendj.*kompani|si eshte kompania/.test(l)) return 'summary';
+
+  // Banka
+  if (/banka|bankes|gjendj.*bank|harmonizim|procredit|npe|raiffeisen/.test(l)) return 'bank';
+
+  // Arka
+  if (/arka|arkes|gjendj.*ark|cash/.test(l)) return 'cash';
+
+  // Arka + Banka bashke
+  if (/arka.*banka|banka.*arka|para ne dore|likuiditet/.test(l)) return 'cash-bank';
+
+  // Shitjet
+  if (/shitj|fatura.*shitj|liber.*shitj/.test(l)) return 'sales';
+
+  // Blerjet
+  if (/blerj|fatura.*blerj|liber.*blerj|furnitor/.test(l)) return 'purchases';
+
+  // Klienti specifik
+  var clientMatch = l.match(/klient[a-z]*\s+([a-z\s]{2,30}?)(?:\s+(?:ne|per|nga|te)|$)/);
+  if (clientMatch) return 'client-search:' + clientMatch[1].trim();
+
+  // Klientet te gjithe
+  if (/klient|liste.*klient/.test(l)) return 'clients';
+
+  // Kontabiliteti/llogarite
+  if (/kontim|llogari|account|plan kontabel/.test(l)) return 'accounts';
+
+  return null;
 }
 
-
-
 function getCompanyDB(text) {
-  var lower = text.toLowerCase();
-  if (/bold|bold consulting/.test(lower)) return 'BilancBoldConsulting';
-  if (/next code|nextcode/.test(lower)) return 'BilancNextCode';
-  if (/ag uniteti|uniteti/.test(lower)) return 'BilancAGUniteti';
-  if (/nova/.test(lower)) return 'BilancNova';
+  var l = text.toLowerCase();
+  if (/next code|nextcode/.test(l)) return 'BilancNextCode';
+  if (/ag uniteti|uniteti/.test(l)) return 'BilancAGUniteti';
+  if (/\bnova\b/.test(l)) return 'BilancNova';
   return 'BilancBoldConsulting';
 }
 
@@ -388,105 +386,114 @@ function getMonthYear(text) {
   var months = {janar:1,shkurt:2,mars:3,prill:4,'maj':5,qershor:6,korrik:7,gusht:8,shtator:9,tetor:10,nentor:11,dhjetor:12};
   var result = {month:0, year:0};
   for (var m in months) {
-    if (text.toLowerCase().includes(m)) result.month = months[m];
+    if (text.toLowerCase().includes(m)) { result.month = months[m]; break; }
   }
-  var yearMatch = text.match(/20\d\d/);
-  if (yearMatch) result.year = parseInt(yearMatch[0]);
+  var ym = text.match(/20\d\d/);
+  if (ym) result.year = parseInt(ym[0]);
+  // Nese s'ka vit, perdor vitin aktual
+  if (result.month > 0 && result.year === 0) result.year = new Date().getFullYear();
   return result;
-}
-
-function detectBilancQuery(text) {
-  var lower = text.toLowerCase();
-  if (/sa kompani|sa klient|kemi.*kompani|kompanit/.test(lower)) return 'sql-summary';
-  if (/profit|loss|p&l|fitim|humbje|rezultat/.test(lower)) return 'sql-pnl';
-  if ((/arka|arkes/.test(lower)) && (/banka|bankes/.test(lower))) return 'sql-cash-bank';
-  if (/banka|bankes|gjendj.*bank|harmonizim|pro.?credit|procredit/.test(lower)) return 'sql-bank';
-  if (/arka|arkes|gjendj.*ark|cash/.test(lower)) return 'sql-cash';
-  if (/kartela.*klient|debitor|klient.*kartela/.test(lower)) return 'sql-client-ledger';
-  if (/kartela.*furnitor|kreditor|furnitor.*kartela/.test(lower)) return 'sql-supplier-ledger';
-  if (/liber.*shitj|shitjet|fatura|shitje/.test(lower)) return 'sql-sales';
-  if (/liber.*blerj|blerjet|blerje|furnitor/.test(lower)) return 'sql-purchases';
-  if (/klient|liste|kallxom klienta/.test(lower)) return 'sql-clients';
-  if (/kontime|llogari|account/.test(lower)) return 'sql-accounts';
-  if (/bilanc|gjendj|likuiditet|para/.test(lower)) return 'sql-cash-bank';
-  return null;
 }
 
 async function queryBilanc(type, text) {
   try {
-    var company = getCompanyDB(text || '');
-    var my = getMonthYear(text || '');
-    
-    if (type === 'sql-cash-bank') {
-      var cash = await fetch('/sql/cash?company=' + company, {headers: authHeaders()}).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
-      var bank = await fetch('/sql/bank?company=' + company, {headers: authHeaders()}).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
+    var company = getCompanyDB(text);
+    var my = getMonthYear(text);
+
+    if (type === 'cash-bank') {
+      var cash = await api('/sql/cash?company=' + company).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
+      var bank = await api('/sql/bank?company=' + company).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
       return {cash: cash, bank: bank};
     }
-    
-    var url = '/sql/' + type.replace('sql-','') + '?company=' + company;
-    if (type === 'sql-sales' || type === 'sql-purchases' || type === 'sql-pnl') {
+
+    if (type.startsWith('client-search:')) {
+      var name = type.split(':')[1];
+      return await api('/sql/clients?company=' + company + '&search=' + encodeURIComponent(name)).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
+    }
+
+    var url = '/sql/' + type + '?company=' + company;
+
+    if (type === 'sales' || type === 'purchases' || type === 'pnl') {
       if (my.month > 0) url += '&month=' + my.month + '&year=' + my.year;
     }
-    if (type === 'sql-client-ledger') {
-      var clientMatch = text.match(/(?:klient[a-z]*\s+|kartela\s+)([A-Za-z\s]+?)(?:\s+ne|\s+per|$)/i);
-      if (clientMatch) url += '&client_name=' + encodeURIComponent(clientMatch[1].trim());
+
+    if (type === 'accounts') {
+      // Detekto grupin e llogarive
+      var grpMatch = text.match(/llogari\s+(\d)/i);
+      if (grpMatch) url += '&group=' + grpMatch[1];
     }
-    var res = await fetch(url, {headers: authHeaders()});
+
+    var res = await api(url);
     if (!res.ok) return null;
     return await res.json();
   } catch(e) { return null; }
 }
+
+// ─── DERGIMI I MESAZHIT ──────────────────────────────────
 function go() {
-  var text = inpEl.value.trim(); if (!text || busy) return;
+  var text = inpEl.value.trim();
+  if (!text || busy) return;
   inpEl.value = ''; inpEl.style.height = 'auto';
   busy = true; sbEl.disabled = true;
-  addMsg('user', text); chkMem(text);
-  hist.push({role:'user', content: text}); showTyp();
+  addMsg('user', text);
+  chkMem(text);
+  hist.push({role:'user', content: text});
+  showTyp();
+
   var bilancType = detectBilancQuery(text);
   var bilancPromise = bilancType ? queryBilanc(bilancType, text) : Promise.resolve(null);
+
   bilancPromise.then(function(bilancData) {
     var messages = hist.slice();
     if (bilancData) {
-      var bilancContext = 'Te dhenat nga Bilanc: ' + JSON.stringify(bilancData, null, 2);
-      messages = hist.slice(0, -1).concat([{role:'user', content: text + '\n\n[KONTEKST BILANC]:\n' + bilancContext}]);
+      var ctx = '[KONTEKST BILANC — Te dhena reale nga SQL Server]:\n' + JSON.stringify(bilancData, null, 2);
+      messages = hist.slice(0, -1).concat([{role:'user', content: text + '\n\n' + ctx}]);
     }
-    fetch('/chat', {method: 'POST', headers: authHeaders(), body: JSON.stringify({messages: messages, memory: mem})})
+
+    api('/chat', {method:'POST', body: JSON.stringify({messages: messages, memory: mem})})
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d.detail) throw new Error(d.detail);
       var reply = d.reply || '';
-      remTyp(); addMsg('nova', reply);
+      remTyp();
+      addMsg('nova', reply);
       speak(reply);
+
+      // Shto butonin e Excel nese ka tabele ose raport
       var hasTable = reply.includes('|') && reply.split('|').length > 4;
-      var hasDoc = /raport|dokument|liste|tabele|template/i.test(reply) && reply.split('\n').length > 6;
-      if (hasTable || hasDoc) addDownloadButtons(reply);
+      var hasReport = /raport|total|shuma|borxh|gjendj/i.test(reply) && reply.split('\n').length > 4;
+      if (hasTable || hasReport) addDownloadButtons(reply);
+
       hist.push({role:'assistant', content: reply});
-      fetch('/history', {method:'POST', headers: authHeaders(), body: JSON.stringify({role:'user', content: text})});
-      fetch('/history', {method:'POST', headers: authHeaders(), body: JSON.stringify({role:'assistant', content: reply})});
+      api('/history', {method:'POST', body: JSON.stringify({role:'user', content: text})});
+      api('/history', {method:'POST', body: JSON.stringify({role:'assistant', content: reply})});
       busy = false; sbEl.disabled = false;
     })
-    .catch(function(e) { remTyp(); addMsg('nova', 'Dicka shkoi keq: ' + e.message); busy = false; sbEl.disabled = false; });
+    .catch(function(e) {
+      remTyp();
+      addMsg('nova', 'Dicka shkoi keq: ' + e.message);
+      busy = false; sbEl.disabled = false;
+    });
   });
 }
-
 
 function uploadFile(input) {
   var file = input.files[0]; if (!file) return;
   addMsg('user', 'Ngarkova: ' + file.name); showTyp();
   var fd = new FormData(); fd.append('file', file);
-  fetch('/upload', {method:'POST', headers: {'Authorization':'Bearer '+token}, body: fd})
+  fetch(BASE + '/upload', {method:'POST', headers: {'Authorization':'Bearer '+token}, body: fd})
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d.error) throw new Error(d.error);
       var prompt = 'Ngarkova "' + file.name + '". Permbajtja:\n' + d.content + '\n\nAnalizo dhe me trego cfare ka.';
       hist.push({role:'user', content: prompt});
-      return fetch('/chat', {method:'POST', headers: authHeaders(), body: JSON.stringify({messages: hist, memory: mem})});
+      return api('/chat', {method:'POST', body: JSON.stringify({messages: hist, memory: mem})});
     })
     .then(function(r) { return r.json(); })
     .then(function(d) {
       var reply = d.reply || '';
-      remTyp(); addMsg('nova', reply);
-      speak(reply); hist.push({role:'assistant', content: reply});
+      remTyp(); addMsg('nova', reply); speak(reply);
+      hist.push({role:'assistant', content: reply});
     })
     .catch(function(e) { remTyp(); addMsg('nova', 'Problem: ' + e.message); });
   input.value = '';
@@ -494,37 +501,27 @@ function uploadFile(input) {
 
 function sq(t) { inpEl.value = t; go(); }
 
-var audioCtx = null;
-var voiceEnabled = false;
-
+// ─── ZERI ────────────────────────────────────────────────
 function enableVoice() {
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  new (window.AudioContext || window.webkitAudioContext)();
   voiceEnabled = true;
   document.getElementById('voice-enable-btn').style.display = 'none';
-  addMsg('nova', 'Zeri u aktivizua.');
+  addMsg('nova', 'Zëri u aktivizua.');
 }
 
 async function speak(text) {
   if (!voiceEnabled) return;
   try {
-    // Provoj ElevenLabs fillimisht
-    var res = await fetch('/speak', {
-      method: 'POST',
-      headers: authHeaders(),
-      body: JSON.stringify({text: text})
-    });
+    var res = await api('/speak', {method:'POST', body: JSON.stringify({text: text})});
     if (res.ok) {
       var blob = await res.blob();
       if (blob.size > 1000) {
         var url = URL.createObjectURL(blob);
-        var audio = new Audio();
-        audio.src = url;
-        var playPromise = audio.play();
-        if (playPromise) playPromise.catch(function(e) { speakBrowser(text); });
+        var audio = new Audio(url);
+        audio.play().catch(function() { speakBrowser(text); });
         return;
       }
     }
-    // Fallback - Web Speech API
     speakBrowser(text);
   } catch(e) { speakBrowser(text); }
 }
@@ -533,9 +530,7 @@ function speakBrowser(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   var utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'sq-AL';
-  utt.rate = 0.95;
-  utt.pitch = 1.0;
+  utt.lang = 'sq-AL'; utt.rate = 0.95; utt.pitch = 1.0;
   window.speechSynthesis.speak(utt);
 }
 
