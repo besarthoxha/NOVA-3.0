@@ -281,6 +281,7 @@ function getMonthYear(text){
 // ─── DETEKTIMI I PYETJEVE BILANC ────────────────────────
 function detectBilancQuery(text){
   var l=text.toLowerCase();
+  if(/onedrive|dosje.*meti|dosje.*besart|dosje.*drini|kerko.*file|kerko.*dokument|hyn te meti|hyn te besart|shiko.*onedrive|file.*onedrive|c ka ne onedrive|cfare ka/.test(l)) return 'onedrive';
   if(/sa ndermardh|sa kompani|cilat jan|lista.*kompan|kompanit/.test(l)) return 'companies';
   if(/arketushm|debitor|kush na ka borxh|nuk ka paguar/.test(l)) return 'receivables';
   if(/pagueshm|kreditor|kujt i kemi borxh|i detyrohem/.test(l)) return 'payables';
@@ -295,7 +296,6 @@ function detectBilancQuery(text){
   // Nese permend nje kompani specifike pa tip te caktuar — merr summary
   if(findCompany(text)) return 'summary';
   // OneDrive
-  if(/onedrive|dosje|dokument|folder|file|shkarko|ngarko.*cloud/.test(l)) return 'onedrive';
   return null;
 }
 
@@ -313,8 +313,23 @@ async function queryBilanc(type, text){
 
     if(type==='onedrive'){
       var odUrl='/onedrive/files';
-      var searchMatch=text.match(/(?:kerko|gjej|search)\s+(.+)/i);
-      if(searchMatch) odUrl='/onedrive/search?q='+encodeURIComponent(searchMatch[1]);
+      // Kerkim specifik
+      var searchMatch=text.match(/(?:kerko|gjej|search|gjema|gjej)\s+["']?([^"']+)["']?/i);
+      if(searchMatch) odUrl='/onedrive/search?q='+encodeURIComponent(searchMatch[1].trim());
+      // Dosje specifike
+      var folderMap={
+        'besart':'77BD7A2302C4C4AF!4066',
+        'drini':'77BD7A2302C4C4AF!s3ed613a861dc42f0a6b55a84c5e31657',
+        'erblini':'77BD7A2302C4C4AF!1131',
+        'meti':'77BD7A2302C4C4AF!123',
+        'tjera':'77BD7A2302C4C4AF!sfa24f199b6e8460893947c6aac537045'
+      };
+      for(var fname in folderMap){
+        if(text.toLowerCase().indexOf(fname)!==-1 && !searchMatch){
+          odUrl='/onedrive/files?folder_id='+folderMap[fname];
+          break;
+        }
+      }
       var r=await api(odUrl);
       if(r.ok) return await r.json();
       return null;
