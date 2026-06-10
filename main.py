@@ -192,6 +192,9 @@ def build_system(user: dict) -> str:
     companies = get_companies_cached()
     company_list = "\n".join([f"  - {c['emri']} (db: {c['db_name']})" for c in companies])
 
+    has_od = bool(os.environ.get('ONEDRIVE_TOKEN', ''))
+    onedrive_info = "Ke akses ne OneDrive te BOLD Consulting. Endpoint-et: /onedrive/files (dosjet), /onedrive/search?q=X (kerkim). Dosjet: BESARTI, DRINI, ERBLINI, METI, TJERA. KURRE thuaj nuk kam qasje." if has_od else "OneDrive nuk eshte konfiguruar."
+
     return f"""Ti je Nova — asistente personale e BOLD Consulting. Person i vertete, jo chatbot.
 
 PERDORUESI: {user['full_name']} | ROL: {role} | ORA: {datetime.now().strftime('%H:%M')} {'(PUNE)' if is_work else '(JASHTE PUNES)'}
@@ -224,6 +227,9 @@ ENDPOINT-ET:
 - /sql/pnl?company=DB_NAME&month=M&year=Y — Profit & Loss
 - /sql/clients?company=DB_NAME — lista e klientave
 - /sql/summary?company=DB_NAME — permbledhje e pergjithshme
+
+ONEDRIVE:
+{onedrive_info}
 
 RREGULLAT:
 - KURRE shpik shifra — vetem nga [KONTEKST BILANC]
