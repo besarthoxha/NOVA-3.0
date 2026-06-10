@@ -763,3 +763,24 @@ async def onedrive_read(request: Request, file_id: str = "", path: str = ""):
         raise
     except Exception as e:
         raise HTTPException(500, str(e))
+
+@app.post("/onedrive/token")
+async def update_onedrive_token(request: Request):
+    """Rifresho OneDrive token pa restart"""
+    await get_user(request)
+    data = await request.json()
+    new_token = data.get('token', '').strip()
+    if not new_token:
+        raise HTTPException(400, "Token bosh")
+    # Ruaj token-in ne memory (aktiv deri sa restart)
+    os.environ['ONEDRIVE_TOKEN'] = new_token
+    # Verifiko
+    import httpx as hx
+    async with hx.AsyncClient() as http:
+        res = await http.get(
+            "https://graph.microsoft.com/v1.0/me/drive/root",
+            headers={"Authorization": f"Bearer {new_token}"}
+        )
+    if res.status_code == 200:
+        return {"ok": True}
+    raise HTTPException(401, "Token i pavlefshëm")
