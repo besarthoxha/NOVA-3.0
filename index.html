@@ -28,7 +28,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .l-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:8px;color:#0a1628;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.08em;transition:all .2s;text-transform:uppercase}
 .l-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(212,175,55,0.3)}
 .l-err{font-family:'DM Mono',monospace;font-size:11px;color:var(--red);text-align:center;display:none;padding:8px;background:rgba(239,68,68,0.08);border-radius:6px;border:0.5px solid rgba(239,68,68,0.2)}
-#app{display:none;width:580px;height:94vh;max-height:820px;flex-direction:column;background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 0 80px rgba(212,175,55,0.06)}
+#app{display:none;width:560px;height:94vh;max-height:820px;flex-direction:column;background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 0 80px rgba(212,175,55,0.06)}
 #app::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);z-index:1}
 #hdr{padding:16px 20px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,var(--surface2),var(--surface));flex-shrink:0}
 #av{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:#0a1628;flex-shrink:0}
@@ -50,7 +50,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 #msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
 #msgs::-webkit-scrollbar{width:3px}
 #msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.msg{display:flex;gap:10px;max-width:94%;animation:fi .25s ease}
+.msg{display:flex;gap:10px;max-width:92%;animation:fi .25s ease}
 @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .msg.u{align-self:flex-end;flex-direction:row-reverse}
 .msg.n{align-self:flex-start}
@@ -75,12 +75,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .ibtn{width:38px;height:38px;border-radius:10px;border:0.5px solid var(--border2);background:var(--surface2);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .15s}
 .ibtn:hover{background:var(--glow);color:var(--gold)}
 #send-btn{background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;color:#0a1628}
-#send-btn:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(212,175,55,0.3)}
-#send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+#send-btn:disabled{opacity:.4;cursor:not-allowed}
 #mic-btn.listening{background:rgba(239,68,68,0.15);border-color:var(--red);color:var(--red);animation:pulse 1.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.3)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
 #vstatus{display:none;padding:5px 16px;font-family:'DM Mono',monospace;font-size:10px;color:var(--red);border-top:0.5px solid var(--border);text-align:center;flex-shrink:0}
-@media(max-width:600px){#app{width:100vw;height:100vh;border-radius:0;border:none}#login{width:90vw;padding:28px 24px}}
+@media(max-width:580px){#app{width:100vw;height:100vh;border-radius:0;border:none}#login{width:90vw;padding:28px 24px}}
 </style>
 </head>
 <body>
@@ -93,7 +92,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="l-err" id="l-err"></div>
   <button class="l-btn" onclick="doLogin()">Hyrje</button>
 </div>
-
 <div id="app" style="display:none">
   <div id="hdr">
     <div id="av">N</div>
@@ -113,7 +111,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div id="msgs"></div>
   <div id="vstatus">duke dëgjuar...</div>
   <div id="qrow">
-    <button class="qb" onclick="sq('Permbledhje e kompanise BOLD Consulting')">overview</button>
+    <button class="qb" onclick="sq('Sa ndermardhe kemi dhe cilat jane?')">ndërmardhet</button>
     <button class="qb" onclick="sq('Llogarite e arketushme — kush na ka borxh?')">arkëtueshme</button>
     <button class="qb" onclick="sq('Llogarite e pagueshme — kujt i kemi borxh?')">pagueshme</button>
     <button class="qb" onclick="sq('Profit and loss per muajin aktual')">P&L</button>
@@ -126,7 +124,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="ibtn" id="send-btn" onclick="go()">&#10148;</button>
   </div>
 </div>
-
 <script>
 var BASE = 'https://chic-energy-production-90a6.up.railway.app';
 var token = localStorage.getItem('nova_token');
@@ -141,424 +138,346 @@ var msgsEl = document.getElementById('msgs');
 var inpEl = document.getElementById('inp');
 var sbEl = document.getElementById('send-btn');
 
-function ah() {
-  return {'Content-Type':'application/json','Authorization':'Bearer '+token};
-}
+// Lista e ndermardhjeve — merret dinamikisht nga serveri
+var companiesList = [];
 
+function ah() { return {'Content-Type':'application/json','Authorization':'Bearer '+token}; }
 function api(path, opts) {
   opts = opts || {};
   opts.headers = Object.assign({}, ah(), opts.headers || {});
   return fetch(BASE + path, opts);
 }
 
+// ─── LOGIN ───────────────────────────────────────────────
 window.addEventListener('load', function() {
   var savedUser = localStorage.getItem('nova_user');
-  if (token && savedUser) {
-    try { currentUser = JSON.parse(savedUser); } catch(e) {}
-  }
+  if (token && savedUser) { try { currentUser = JSON.parse(savedUser); } catch(e) {} }
   if (token && currentUser) {
-    api('/me')
-      .then(function(r) { return r.json(); })
-      .then(function(d) {
-        if (d && d.username) {
-          currentUser = d;
-          localStorage.setItem('nova_user', JSON.stringify(d));
-          loadApp();
-        } else {
-          localStorage.removeItem('nova_token');
-          localStorage.removeItem('nova_user');
-          showLogin();
-        }
-      })
-      .catch(function() { showLogin(); });
-  } else {
-    showLogin();
-  }
+    api('/me').then(function(r){return r.json();}).then(function(d){
+      if (d && d.username) { currentUser=d; localStorage.setItem('nova_user',JSON.stringify(d)); loadApp(); }
+      else { localStorage.removeItem('nova_token'); localStorage.removeItem('nova_user'); showLogin(); }
+    }).catch(function(){ showLogin(); });
+  } else { showLogin(); }
 });
 
-function showLogin() {
-  document.getElementById('login').style.display = 'flex';
-  initVoice();
-}
+function showLogin() { document.getElementById('login').style.display='flex'; initVoice(); }
 
-document.getElementById('l-pass').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') doLogin();
-});
+document.getElementById('l-pass').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
 
 function doLogin() {
   var username = document.getElementById('l-user').value.trim().toLowerCase();
   var password = document.getElementById('l-pass').value;
   var errEl = document.getElementById('l-err');
   var btn = document.querySelector('.l-btn');
-  errEl.style.display = 'none';
-  btn.textContent = 'Duke hyrë...';
-  btn.disabled = true;
-  fetch(BASE + '/login', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({username: username, password: password})
-  })
-  .then(function(r) { return r.json().then(function(d) { return {ok: r.ok, data: d}; }); })
-  .then(function(rd) {
-    btn.textContent = 'Hyrje'; btn.disabled = false;
-    if (!rd.ok) { errEl.textContent = rd.data.detail || 'Gabim'; errEl.style.display = 'block'; return; }
-    token = rd.data.token;
-    currentUser = rd.data.user;
-    localStorage.setItem('nova_token', token);
-    localStorage.setItem('nova_user', JSON.stringify(rd.data.user));
-    document.getElementById('login').style.display = 'none';
+  errEl.style.display='none'; btn.textContent='Duke hyrë...'; btn.disabled=true;
+  fetch(BASE+'/login',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username:username,password:password})})
+  .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d};});})
+  .then(function(rd){
+    btn.textContent='Hyrje'; btn.disabled=false;
+    if(!rd.ok){errEl.textContent=rd.data.detail||'Gabim';errEl.style.display='block';return;}
+    token=rd.data.token; currentUser=rd.data.user;
+    localStorage.setItem('nova_token',token);
+    localStorage.setItem('nova_user',JSON.stringify(rd.data.user));
+    document.getElementById('login').style.display='none';
     loadApp();
-  })
-  .catch(function() {
-    btn.textContent = 'Hyrje'; btn.disabled = false;
-    errEl.textContent = 'Problem lidhjeje me serverin'; errEl.style.display = 'block';
+  }).catch(function(){
+    btn.textContent='Hyrje'; btn.disabled=false;
+    errEl.textContent='Problem lidhjeje'; errEl.style.display='block';
   });
 }
 
 function loadApp() {
-  api('/memory').then(function(r) { return r.json(); }).then(function(d) { if (d && !d.error) mem = d; }).catch(function() {});
-  api('/history').then(function(r) { return r.json(); }).then(function(d) {
-    if (d && d.length > 0) hist = d.map(function(m) { return {role: m.role, content: m.content}; });
-  }).catch(function() {});
+  // Ngarko memory, history dhe kompanitë njëherësh
+  Promise.all([
+    api('/memory').then(function(r){return r.json();}).catch(function(){return null;}),
+    api('/history').then(function(r){return r.json();}).catch(function(){return null;}),
+    api('/sql/companies').then(function(r){return r.json();}).catch(function(){return null;})
+  ]).then(function(results){
+    if(results[0] && !results[0].error) mem=results[0];
+    if(results[1] && results[1].length>0) hist=results[1].map(function(m){return{role:m.role,content:m.content};});
+    if(results[2] && results[2].companies) companiesList=results[2].companies;
+  });
 
-  if (currentUser) {
-    var role = currentUser.role;
-    var badge = document.getElementById('role-badge');
-    badge.textContent = role === 'owner' ? 'BOLD' : role === 'partner' ? 'PARTNER' : 'STAFF';
-    badge.className = 'badge badge-' + role;
-    var name = currentUser.full_name.split(' ')[0];
-    document.getElementById('user-label').textContent = name + ' — BOLD';
+  if(currentUser){
+    var role=currentUser.role;
+    var badge=document.getElementById('role-badge');
+    badge.textContent=role==='owner'?'BOLD':role==='partner'?'PARTNER':'STAFF';
+    badge.className='badge badge-'+role;
+    document.getElementById('user-label').textContent=currentUser.full_name.split(' ')[0]+' — BOLD';
   }
-  updMem();
-  initVoice();
-  document.getElementById('app').style.display = 'flex';
-  var h = new Date().getHours();
-  var n = currentUser ? (currentUser.username === 'besart' ? 'Zotëri Hoxha' : currentUser.full_name.split(' ')[0]) : 'Boss';
-  addMsg('nova', h >= 9 && h < 17 ? n + ', mirëdita. Gati për punë.' : n + ', çka kemi?');
+  updMem(); initVoice();
+  document.getElementById('app').style.display='flex';
+  var h=new Date().getHours();
+  var n=currentUser?(currentUser.username==='besart'?'Zotëri Hoxha':currentUser.full_name.split(' ')[0]):'Boss';
+  addMsg('nova', h>=9&&h<17?n+', mirëdita. Gati për punë.':n+', çka kemi?');
   inpEl.focus();
 }
 
-function doLogout() {
+function doLogout(){
   localStorage.removeItem('nova_token'); localStorage.removeItem('nova_user');
-  token = null; currentUser = null; hist = []; mem = {notes:[],clients:[],family:[]};
-  msgsEl.innerHTML = '';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login').style.display = 'flex';
-  document.getElementById('l-pass').value = '';
+  token=null; currentUser=null; hist=[]; mem={notes:[],clients:[],family:[]}; companiesList=[];
+  msgsEl.innerHTML='';
+  document.getElementById('app').style.display='none';
+  document.getElementById('login').style.display='flex';
+  document.getElementById('l-pass').value='';
 }
 
-function clearChat() {
-  hist = []; msgsEl.innerHTML = '';
-  api('/clear-history', {method:'POST'});
-  var n = currentUser ? (currentUser.username === 'besart' ? 'Boss' : currentUser.full_name.split(' ')[0]) : 'Boss';
-  addMsg('nova', 'Bisedë e re. Çka kemi, ' + n + '?');
+function clearChat(){
+  hist=[]; msgsEl.innerHTML='';
+  api('/clear-history',{method:'POST'});
+  addMsg('nova','Bisedë e re. Çka kemi?');
 }
 
-function updMem() {
-  var all = (mem.notes||[]).concat((mem.clients||[]).map(function(c) { return c.name || String(c); })).concat((mem.family||[]).map(function(f) { return f.name || String(f); }));
-  var el = document.getElementById('mtags');
-  if (all.length === 0) {
-    el.innerHTML = '<span style="font-size:10px;font-family:monospace;color:var(--text3)">mem://empty</span>';
-  } else {
-    el.innerHTML = all.slice(0,8).map(function(n) {
-      return '<span class="mcard"><span class="mcard-dot"></span>' + String(n).slice(0,24) + '</span>';
-    }).join('');
+// ─── MEMORY ──────────────────────────────────────────────
+function updMem(){
+  var all=(mem.notes||[]).concat((mem.clients||[]).map(function(c){return c.name||String(c);}))
+    .concat((mem.family||[]).map(function(f){return f.name||String(f);}));
+  var el=document.getElementById('mtags');
+  el.innerHTML=all.length===0
+    ?'<span style="font-size:10px;font-family:monospace;color:var(--text3)">mem://empty</span>'
+    :all.slice(0,8).map(function(n){return'<span class="mcard"><span class="mcard-dot"></span>'+String(n).slice(0,24)+'</span>';}).join('');
+}
+function saveMem(){ api('/memory',{method:'POST',body:JSON.stringify(mem)}); }
+function chkMem(text){
+  if(/^mbaje mend/i.test(text)){
+    var info=text.replace(/^mbaje mend\s*/i,'').trim();
+    if(info){mem.notes.push(info);updMem();saveMem();}
   }
 }
 
-function saveMem() { api('/memory', {method:'POST', body: JSON.stringify(mem)}); }
+// ─── GJETJA E KOMPANISE — 100% DINAMIKE ─────────────────
+function findCompany(text) {
+  if(!companiesList.length) return null;
+  var lower = text.toLowerCase();
 
-function chkMem(text) {
-  if (/^mbaje mend/i.test(text)) {
-    var info = text.replace(/^mbaje mend\s*/i, '').trim();
-    if (info) { mem.notes.push(info); updMem(); saveMem(); }
+  // Match i saktë i plotë
+  for(var i=0;i<companiesList.length;i++){
+    var c=companiesList[i];
+    if(lower.indexOf(c.emri_lower)!==-1) return c;
   }
-}
 
-function addMsg(role, text) {
-  var w = document.createElement('div'); w.className = 'msg ' + (role === 'user' ? 'u' : 'n');
-  if (role !== 'user') { var a = document.createElement('div'); a.className = 'mav'; a.textContent = 'N'; w.appendChild(a); }
-  var b = document.createElement('div'); b.className = 'bbl'; b.textContent = text;
-  w.appendChild(b); msgsEl.appendChild(w); msgsEl.scrollTop = msgsEl.scrollHeight;
-}
-
-function showTyp() {
-  var d = document.createElement('div'); d.className = 'msg n'; d.id = 'typ';
-  var a = document.createElement('div'); a.className = 'mav'; a.textContent = 'N';
-  var b = document.createElement('div'); b.className = 'bbl typing';
-  b.innerHTML = '<div class="dt"></div><div class="dt"></div><div class="dt"></div>';
-  d.appendChild(a); d.appendChild(b); msgsEl.appendChild(d); msgsEl.scrollTop = msgsEl.scrollHeight;
-}
-function remTyp() { var t = document.getElementById('typ'); if (t) t.remove(); }
-
-function addDownloadButtons(replyText) {
-  var w = document.createElement('div'); w.className = 'dl-row';
-  var btn = document.createElement('button'); btn.className = 'dl-btn';
-  btn.textContent = '↓ excel';
-  btn.onclick = function() {
-    var title = prompt('Titulli:', 'Raport BOLD') || 'Raport BOLD';
-    downloadExcel(title, replyText);
-  };
-  w.appendChild(btn);
-  msgsEl.appendChild(w); msgsEl.scrollTop = msgsEl.scrollHeight;
-}
-
-function downloadExcel(title, text) {
-  addMsg('nova', 'Duke gjeneruar Excel...');
-  var body = {title: title, subtitle: new Date().toLocaleDateString('sq'), headers:[], rows:[]};
-  var lines = text.split('\n').filter(function(l) { return l.includes('|'); });
-  if (lines.length > 2) {
-    body.headers = lines[0].split('|').map(function(h) { return h.trim(); }).filter(function(h) { return h && !h.match(/^-+$/); });
-    body.rows = lines.slice(2).map(function(l) {
-      var cells = l.split('|').map(function(c) { return c.trim(); });
-      return cells.filter(function(c) { return c; });
-    }).filter(function(r) { return r.length > 0; });
-  } else {
-    body.headers = ['Permbajtja'];
-    body.rows = text.split('\n').filter(function(l) { return l.trim(); }).map(function(l) { return [l]; });
+  // Match i pjesshëm — fjale individuale
+  var words = lower.split(/\s+/);
+  for(var w=0;w<words.length;w++){
+    if(words[w].length<3) continue;
+    for(var i=0;i<companiesList.length;i++){
+      var c=companiesList[i];
+      if(c.emri_lower.indexOf(words[w])!==-1) return c;
+    }
   }
-  api('/generate/excel', {method:'POST', body: JSON.stringify(body)})
-    .then(function(r) { if (!r.ok) throw new Error('Export deshtoi'); return r.blob(); })
-    .then(function(blob) {
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a'); a.href = url; a.download = title + '.xlsx'; a.click(); URL.revokeObjectURL(url);
-      var msgs = msgsEl.querySelectorAll('.msg.n');
-      var last = msgs[msgs.length-1];
-      if (last && last.querySelector('.bbl').textContent.includes('Duke gjeneruar')) last.remove();
-      addMsg('nova', title + '.xlsx u shkarkua.');
-    })
-    .catch(function(e) { addMsg('nova', 'Problem: ' + e.message); });
-}
-
-// ─── DETEKTIMI I PYETJEVE BILANC ────────────────────────
-function detectBilancQuery(text) {
-  var l = text.toLowerCase();
-
-  // Llogarite e arketushme
-  if (/arketushm|debitor|kush na ka borxh|kush nuk ka paguar|na ka borxh/.test(l)) return 'receivables';
-
-  // Llogarite e pagueshme
-  if (/pagueshm|kreditor|kujt i kemi borxh|kemi borxh|i detyrohem/.test(l)) return 'payables';
-
-  // P&L
-  if (/profit|loss|p&l|fitim|humbj|rezultat|te ardhura|shpenzim/.test(l)) return 'pnl';
-
-  // Summary / overview
-  if (/permbledhj|overview|snapshot|gjendj.*kompani|si eshte kompania/.test(l)) return 'summary';
-
-  // Banka
-  if (/banka|bankes|gjendj.*bank|harmonizim|procredit|npe|raiffeisen/.test(l)) return 'bank';
-
-  // Arka
-  if (/arka|arkes|gjendj.*ark|cash/.test(l)) return 'cash';
-
-  // Arka + Banka bashke
-  if (/arka.*banka|banka.*arka|para ne dore|likuiditet/.test(l)) return 'cash-bank';
-
-  // Shitjet
-  if (/shitj|fatura.*shitj|liber.*shitj/.test(l)) return 'sales';
-
-  // Blerjet
-  if (/blerj|fatura.*blerj|liber.*blerj|furnitor/.test(l)) return 'purchases';
-
-  // Klienti specifik
-  var clientMatch = l.match(/klient[a-z]*\s+([a-z\s]{2,30}?)(?:\s+(?:ne|per|nga|te)|$)/);
-  if (clientMatch) return 'client-search:' + clientMatch[1].trim();
-
-  // Klientet te gjithe
-  if (/klient|liste.*klient/.test(l)) return 'clients';
-
-  // Kontabiliteti/llogarite
-  if (/kontim|llogari|account|plan kontabel/.test(l)) return 'accounts';
-
   return null;
 }
 
-function getCompanyDB(text) {
-  var l = text.toLowerCase();
-  if (/next code|nextcode/.test(l)) return 'BilancNextCode';
-  if (/ag uniteti|uniteti/.test(l)) return 'BilancAGUniteti';
-  if (/\bnova\b/.test(l)) return 'BilancNova';
-  return 'BilancBoldConsulting';
-}
-
-function getMonthYear(text) {
-  var months = {janar:1,shkurt:2,mars:3,prill:4,'maj':5,qershor:6,korrik:7,gusht:8,shtator:9,tetor:10,nentor:11,dhjetor:12};
-  var result = {month:0, year:0};
-  for (var m in months) {
-    if (text.toLowerCase().includes(m)) { result.month = months[m]; break; }
-  }
-  var ym = text.match(/20\d\d/);
-  if (ym) result.year = parseInt(ym[0]);
-  // Nese s'ka vit, perdor vitin aktual
-  if (result.month > 0 && result.year === 0) result.year = new Date().getFullYear();
+function getMonthYear(text){
+  var months={janar:1,shkurt:2,mars:3,prill:4,'maj':5,qershor:6,korrik:7,gusht:8,shtator:9,tetor:10,nentor:11,dhjetor:12};
+  var result={month:0,year:0};
+  for(var m in months){ if(text.toLowerCase().indexOf(m)!==-1){result.month=months[m];break;} }
+  var ym=text.match(/20\d\d/); if(ym) result.year=parseInt(ym[0]);
+  if(result.month>0&&result.year===0) result.year=new Date().getFullYear();
   return result;
 }
 
-async function queryBilanc(type, text) {
-  try {
-    var company = getCompanyDB(text);
-    var my = getMonthYear(text);
-
-    if (type === 'cash-bank') {
-      var cash = await api('/sql/cash?company=' + company).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
-      var bank = await api('/sql/bank?company=' + company).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
-      return {cash: cash, bank: bank};
-    }
-
-    if (type.startsWith('client-search:')) {
-      var name = type.split(':')[1];
-      return await api('/sql/clients?company=' + company + '&search=' + encodeURIComponent(name)).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
-    }
-
-    var url = '/sql/' + type + '?company=' + company;
-
-    if (type === 'sales' || type === 'purchases' || type === 'pnl') {
-      if (my.month > 0) url += '&month=' + my.month + '&year=' + my.year;
-    }
-
-    if (type === 'accounts') {
-      // Detekto grupin e llogarive
-      var grpMatch = text.match(/llogari\s+(\d)/i);
-      if (grpMatch) url += '&group=' + grpMatch[1];
-    }
-
-    var res = await api(url);
-    if (!res.ok) return null;
-    return await res.json();
-  } catch(e) { return null; }
+// ─── DETEKTIMI I PYETJEVE BILANC ────────────────────────
+function detectBilancQuery(text){
+  var l=text.toLowerCase();
+  if(/sa ndermardh|sa kompani|cilat jan|lista.*kompan|kompanit/.test(l)) return 'companies';
+  if(/arketushm|debitor|kush na ka borxh|nuk ka paguar/.test(l)) return 'receivables';
+  if(/pagueshm|kreditor|kujt i kemi borxh|i detyrohem/.test(l)) return 'payables';
+  if(/profit|loss|p&l|fitim|humbj|rezultat|te ardhura|shpenzim/.test(l)) return 'pnl';
+  if(/permbledhj|overview|snapshot|si eshte kompania/.test(l)) return 'summary';
+  if(/banka|bankes|harmonizim|procredit|npe|raiffeisen/.test(l)) return 'bank';
+  if(/arka|arkes|cash/.test(l)&&/banka|bankes/.test(l)) return 'cash-bank';
+  if(/arka|arkes|cash/.test(l)) return 'cash';
+  if(/shitj|fatura.*shitj|liber.*shitj/.test(l)) return 'sales';
+  if(/blerj|fatura.*blerj|liber.*blerj/.test(l)) return 'purchases';
+  if(/klient|liste.*klient/.test(l)) return 'clients';
+  // Nese permend nje kompani specifike pa tip te caktuar — merr summary
+  if(findCompany(text)) return 'summary';
+  return null;
 }
 
-// ─── DERGIMI I MESAZHIT ──────────────────────────────────
-function go() {
-  var text = inpEl.value.trim();
-  if (!text || busy) return;
-  inpEl.value = ''; inpEl.style.height = 'auto';
-  busy = true; sbEl.disabled = true;
-  addMsg('user', text);
-  chkMem(text);
-  hist.push({role:'user', content: text});
-  showTyp();
+async function queryBilanc(type, text){
+  try{
+    var company = findCompany(text);
+    var companyParam = company ? '?company='+encodeURIComponent(company.db_name) : '';
+    var my = getMonthYear(text);
 
-  var bilancType = detectBilancQuery(text);
-  var bilancPromise = bilancType ? queryBilanc(bilancType, text) : Promise.resolve(null);
-
-  bilancPromise.then(function(bilancData) {
-    var messages = hist.slice();
-    if (bilancData) {
-      var ctx = '[KONTEKST BILANC — Te dhena reale nga SQL Server]:\n' + JSON.stringify(bilancData, null, 2);
-      messages = hist.slice(0, -1).concat([{role:'user', content: text + '\n\n' + ctx}]);
+    if(type==='companies'){
+      var r=await api('/sql/companies');
+      if(r.ok){ var d=await r.json(); companiesList=d.companies||[]; return d; }
+      return null;
     }
 
-    api('/chat', {method:'POST', body: JSON.stringify({messages: messages, memory: mem})})
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.detail) throw new Error(d.detail);
-      var reply = d.reply || '';
-      remTyp();
-      addMsg('nova', reply);
-      speak(reply);
+    if(type==='cash-bank'){
+      var cash=await api('/sql/cash'+companyParam).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
+      var bank=await api('/sql/bank'+companyParam).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
+      return{cash:cash,bank:bank};
+    }
 
-      // Shto butonin e Excel nese ka tabele ose raport
-      var hasTable = reply.includes('|') && reply.split('|').length > 4;
-      var hasReport = /raport|total|shuma|borxh|gjendj/i.test(reply) && reply.split('\n').length > 4;
-      if (hasTable || hasReport) addDownloadButtons(reply);
+    var url='/sql/'+type+companyParam;
+    if((type==='sales'||type==='purchases'||type==='pnl')&&my.month>0){
+      url+=(companyParam?'&':'?')+'month='+my.month+'&year='+my.year;
+    }
 
-      hist.push({role:'assistant', content: reply});
-      api('/history', {method:'POST', body: JSON.stringify({role:'user', content: text})});
-      api('/history', {method:'POST', body: JSON.stringify({role:'assistant', content: reply})});
-      busy = false; sbEl.disabled = false;
-    })
-    .catch(function(e) {
-      remTyp();
-      addMsg('nova', 'Dicka shkoi keq: ' + e.message);
-      busy = false; sbEl.disabled = false;
-    });
+    var res=await api(url);
+    if(!res.ok) return null;
+    return await res.json();
+  }catch(e){return null;}
+}
+
+// ─── MESAZHET ────────────────────────────────────────────
+function addMsg(role,text){
+  var w=document.createElement('div'); w.className='msg '+(role==='user'?'u':'n');
+  if(role!=='user'){var a=document.createElement('div');a.className='mav';a.textContent='N';w.appendChild(a);}
+  var b=document.createElement('div'); b.className='bbl'; b.textContent=text;
+  w.appendChild(b); msgsEl.appendChild(w); msgsEl.scrollTop=msgsEl.scrollHeight;
+}
+function showTyp(){
+  var d=document.createElement('div');d.className='msg n';d.id='typ';
+  var a=document.createElement('div');a.className='mav';a.textContent='N';
+  var b=document.createElement('div');b.className='bbl typing';
+  b.innerHTML='<div class="dt"></div><div class="dt"></div><div class="dt"></div>';
+  d.appendChild(a);d.appendChild(b);msgsEl.appendChild(d);msgsEl.scrollTop=msgsEl.scrollHeight;
+}
+function remTyp(){var t=document.getElementById('typ');if(t)t.remove();}
+
+function addExcelBtn(replyText){
+  var w=document.createElement('div');w.className='dl-row';
+  var btn=document.createElement('button');btn.className='dl-btn';
+  btn.textContent='↓ excel';
+  btn.onclick=function(){
+    var title=prompt('Titulli:','Raport BOLD')||'Raport BOLD';
+    downloadExcel(title,replyText);
+  };
+  w.appendChild(btn);msgsEl.appendChild(w);msgsEl.scrollTop=msgsEl.scrollHeight;
+}
+
+function downloadExcel(title,text){
+  addMsg('nova','Duke gjeneruar Excel...');
+  var body={title:title,subtitle:new Date().toLocaleDateString('sq'),headers:[],rows:[]};
+  var lines=text.split('\n').filter(function(l){return l.includes('|');});
+  if(lines.length>2){
+    body.headers=lines[0].split('|').map(function(h){return h.trim();}).filter(function(h){return h&&!h.match(/^-+$/);});
+    body.rows=lines.slice(2).map(function(l){
+      var cells=l.split('|').map(function(c){return c.trim();});
+      return cells.filter(function(c){return c;});
+    }).filter(function(r){return r.length>0;});
+  } else {
+    body.headers=['Permbajtja'];
+    body.rows=text.split('\n').filter(function(l){return l.trim();}).map(function(l){return[l];});
+  }
+  api('/generate/excel',{method:'POST',body:JSON.stringify(body)})
+    .then(function(r){if(!r.ok)throw new Error('Export deshtoi');return r.blob();})
+    .then(function(blob){
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a');a.href=url;a.download=title+'.xlsx';a.click();URL.revokeObjectURL(url);
+      var msgs=msgsEl.querySelectorAll('.msg.n');
+      var last=msgs[msgs.length-1];
+      if(last&&last.querySelector('.bbl').textContent.includes('Duke gjeneruar'))last.remove();
+      addMsg('nova',title+'.xlsx u shkarkua.');
+    }).catch(function(e){addMsg('nova','Problem: '+e.message);});
+}
+
+// ─── DERGIMI ─────────────────────────────────────────────
+function go(){
+  var text=inpEl.value.trim(); if(!text||busy) return;
+  inpEl.value=''; inpEl.style.height='auto';
+  busy=true; sbEl.disabled=true;
+  addMsg('user',text); chkMem(text);
+  hist.push({role:'user',content:text}); showTyp();
+
+  var bilancType=detectBilancQuery(text);
+  var bilancPromise=bilancType?queryBilanc(bilancType,text):Promise.resolve(null);
+
+  bilancPromise.then(function(bilancData){
+    var messages=hist.slice();
+    if(bilancData){
+      var ctx='[KONTEKST BILANC — Te dhena reale nga SQL Server]:\n'+JSON.stringify(bilancData,null,2);
+      messages=hist.slice(0,-1).concat([{role:'user',content:text+'\n\n'+ctx}]);
+    }
+    api('/chat',{method:'POST',body:JSON.stringify({messages:messages,memory:mem})})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.detail) throw new Error(d.detail);
+      var reply=d.reply||'';
+      remTyp(); addMsg('nova',reply); speak(reply);
+      var hasTable=reply.includes('|')&&reply.split('|').length>4;
+      var hasReport=/total|shuma|borxh|gjendj|fitim/i.test(reply)&&reply.split('\n').length>4;
+      if(hasTable||hasReport) addExcelBtn(reply);
+      hist.push({role:'assistant',content:reply});
+      api('/history',{method:'POST',body:JSON.stringify({role:'user',content:text})});
+      api('/history',{method:'POST',body:JSON.stringify({role:'assistant',content:reply})});
+      busy=false; sbEl.disabled=false;
+    }).catch(function(e){remTyp();addMsg('nova','Dicka shkoi keq: '+e.message);busy=false;sbEl.disabled=false;});
   });
 }
 
-function uploadFile(input) {
-  var file = input.files[0]; if (!file) return;
-  addMsg('user', 'Ngarkova: ' + file.name); showTyp();
-  var fd = new FormData(); fd.append('file', file);
-  fetch(BASE + '/upload', {method:'POST', headers: {'Authorization':'Bearer '+token}, body: fd})
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.error) throw new Error(d.error);
-      var prompt = 'Ngarkova "' + file.name + '". Permbajtja:\n' + d.content + '\n\nAnalizo dhe me trego cfare ka.';
-      hist.push({role:'user', content: prompt});
-      return api('/chat', {method:'POST', body: JSON.stringify({messages: hist, memory: mem})});
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      var reply = d.reply || '';
-      remTyp(); addMsg('nova', reply); speak(reply);
-      hist.push({role:'assistant', content: reply});
-    })
-    .catch(function(e) { remTyp(); addMsg('nova', 'Problem: ' + e.message); });
-  input.value = '';
+function uploadFile(input){
+  var file=input.files[0]; if(!file) return;
+  addMsg('user','Ngarkova: '+file.name); showTyp();
+  var fd=new FormData(); fd.append('file',file);
+  fetch(BASE+'/upload',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.error) throw new Error(d.error);
+      var prompt='Ngarkova "'+file.name+'". Permbajtja:\n'+d.content+'\n\nAnalizo dhe me trego cfare ka.';
+      hist.push({role:'user',content:prompt});
+      return api('/chat',{method:'POST',body:JSON.stringify({messages:hist,memory:mem})});
+    }).then(function(r){return r.json();})
+    .then(function(d){
+      var reply=d.reply||''; remTyp(); addMsg('nova',reply); speak(reply);
+      hist.push({role:'assistant',content:reply});
+    }).catch(function(e){remTyp();addMsg('nova','Problem: '+e.message);});
+  input.value='';
 }
 
-function sq(t) { inpEl.value = t; go(); }
+function sq(t){inpEl.value=t;go();}
 
 // ─── ZERI ────────────────────────────────────────────────
-function enableVoice() {
-  new (window.AudioContext || window.webkitAudioContext)();
-  voiceEnabled = true;
-  document.getElementById('voice-enable-btn').style.display = 'none';
-  addMsg('nova', 'Zëri u aktivizua.');
+function enableVoice(){
+  new(window.AudioContext||window.webkitAudioContext)();
+  voiceEnabled=true;
+  document.getElementById('voice-enable-btn').style.display='none';
+  addMsg('nova','Zëri u aktivizua.');
 }
 
-async function speak(text) {
-  if (!voiceEnabled) return;
-  try {
-    var res = await api('/speak', {method:'POST', body: JSON.stringify({text: text})});
-    if (res.ok) {
-      var blob = await res.blob();
-      if (blob.size > 1000) {
-        var url = URL.createObjectURL(blob);
-        var audio = new Audio(url);
-        audio.play().catch(function() { speakBrowser(text); });
-        return;
-      }
-    }
+async function speak(text){
+  if(!voiceEnabled) return;
+  try{
+    var res=await api('/speak',{method:'POST',body:JSON.stringify({text:text})});
+    if(res.ok){var blob=await res.blob();if(blob.size>1000){var url=URL.createObjectURL(blob);var audio=new Audio(url);audio.play().catch(function(){speakBrowser(text);});return;}}
     speakBrowser(text);
-  } catch(e) { speakBrowser(text); }
+  }catch(e){speakBrowser(text);}
 }
 
-function speakBrowser(text) {
-  if (!window.speechSynthesis) return;
+function speakBrowser(text){
+  if(!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  var utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'sq-AL'; utt.rate = 0.95; utt.pitch = 1.0;
+  var utt=new SpeechSynthesisUtterance(text);utt.lang='sq-AL';utt.rate=0.95;
   window.speechSynthesis.speak(utt);
 }
 
-inpEl.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } });
-inpEl.addEventListener('input', function() { inpEl.style.height = 'auto'; inpEl.style.height = Math.min(inpEl.scrollHeight, 100) + 'px'; });
+inpEl.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();go();}});
+inpEl.addEventListener('input',function(){inpEl.style.height='auto';inpEl.style.height=Math.min(inpEl.scrollHeight,100)+'px';});
 
-function initVoice() {
-  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { document.getElementById('mic-btn').style.display = 'none'; return; }
-  recognition = new SR(); recognition.lang = 'sq-AL'; recognition.continuous = false; recognition.interimResults = false;
-  recognition.onresult = function(e) { inpEl.value = e.results[0][0].transcript; stopListening(); go(); };
-  recognition.onerror = function() { stopListening(); };
-  recognition.onend = function() { stopListening(); };
+function initVoice(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){document.getElementById('mic-btn').style.display='none';return;}
+  recognition=new SR();recognition.lang='sq-AL';recognition.continuous=false;recognition.interimResults=false;
+  recognition.onresult=function(e){inpEl.value=e.results[0][0].transcript;stopListening();go();};
+  recognition.onerror=function(){stopListening();};recognition.onend=function(){stopListening();};
 }
-
-function toggleVoice() {
-  if (isListening) { stopListening(); return; }
-  isListening = true;
-  document.getElementById('mic-btn').classList.add('listening');
-  document.getElementById('vstatus').style.display = 'block';
-  if (recognition) recognition.start();
+function toggleVoice(){
+  if(isListening){stopListening();return;}
+  isListening=true;document.getElementById('mic-btn').classList.add('listening');
+  document.getElementById('vstatus').style.display='block';
+  if(recognition)recognition.start();
 }
-
-function stopListening() {
-  isListening = false;
-  document.getElementById('mic-btn').classList.remove('listening');
-  document.getElementById('vstatus').style.display = 'none';
-  if (recognition) { try { recognition.stop(); } catch(e) {} }
+function stopListening(){
+  isListening=false;document.getElementById('mic-btn').classList.remove('listening');
+  document.getElementById('vstatus').style.display='none';
+  if(recognition){try{recognition.stop();}catch(e){}}
 }
 </script>
 </body>
