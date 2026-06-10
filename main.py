@@ -107,7 +107,12 @@ def find_company_db(text):
     companies = get_companies_cached()
     text_lower = text.lower()
     
-    # Match i sakte
+    # Match direkt me db_name
+    for c in companies:
+        if c["db_name"].lower() in text_lower:
+            return c["db_name"], c["emri"]
+    
+    # Match me emrin e pastruar
     for c in companies:
         if c["emri_lower"] in text_lower:
             return c["db_name"], c["emri"]
@@ -117,7 +122,7 @@ def find_company_db(text):
     for word in words:
         if len(word) < 3: continue
         for c in companies:
-            if word in c["emri_lower"]:
+            if word in c["emri_lower"] or word in c["db_name"].lower():
                 return c["db_name"], c["emri"]
     
     # Default - BilancBoldConsulting
