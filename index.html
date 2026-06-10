@@ -330,6 +330,13 @@ async function queryBilanc(type, text){
           break;
         }
       }
+      // Lexim file specifik
+      var readMatch=text.match(/lexo|hap|shiko|gjej.*file|read\s+(.+\.(xlsx|xls|pdf|docx))/i);
+      var fileIdMatch=text.match(/file[_-]?id[:\s]+([A-Za-z0-9!]+)/i);
+      if(fileIdMatch){
+        var r=await api('/onedrive/read?file_id='+fileIdMatch[1]);
+        if(r.ok) return await r.json();
+      }
       var r=await api(odUrl);
       if(r.ok) return await r.json();
       return null;
@@ -419,7 +426,8 @@ function go(){
   bilancPromise.then(function(bilancData){
     var messages=hist.slice();
     if(bilancData){
-      var ctx='[KONTEKST BILANC — Te dhena reale nga SQL Server]:\n'+JSON.stringify(bilancData,null,2);
+      var ctxLabel = bilancType==='onedrive' ? '[KONTEKST ONEDRIVE]' : '[KONTEKST BILANC — Te dhena reale nga SQL Server]';
+      var ctx=ctxLabel+':\n'+JSON.stringify(bilancData,null,2);
       messages=hist.slice(0,-1).concat([{role:'user',content:text+'\n\n'+ctx}]);
     }
     api('/chat',{method:'POST',body:JSON.stringify({messages:messages,memory:mem})})
