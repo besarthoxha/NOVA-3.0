@@ -671,3 +671,95 @@ async def onedrive_search(request: Request, q: str = ""):
         return {"items": items, "total": len(items)}
     except Exception as e:
         raise HTTPException(500, str(e))
+
+@app.get("/onedrive/folder")
+async def onedrive_folder(request: Request, path: str = "", folder_id: str = ""):
+    await get_user(request)
+    token = os.environ.get('ONEDRIVE_TOKEN', '')
+    if not token:
+        raise HTTPException(400, "ONEDRIVE_TOKEN nuk eshte konfiguruar")
+    try:
+        async with _httpx.AsyncClient() as http:
+            if folder_id:
+                url = f"https://graph.microsoft.com/v1.0/me/drive/items/{folder_id}/children"
+            elif path:
+                url = f"https://graph.microsoft.com/v1.0/me/drive/root:/{path}:/children"
+            else:
+                url = "https://graph.microsoft.com/v1.0/me/drive/root/children"
+            res = await http.get(url, headers={"Authorization": f"Bearer {token}"})
+        if res.status_code == 401:
+            raise HTTPException(401, "Token OneDrive skadoi.")
+        data = res.json()
+        items = []
+        for item in data.get("value", []):
+            items.append({
+                "id": item["id"],
+                "name": item["name"],
+                "type": "folder" if "folder" in item else "file",
+                "size": item.get("size", 0),
+                "modified": item.get("lastModifiedDateTime", ""),
+                "url": item.get("webUrl", ""),
+                "children": item.get("folder", {}).get("childCount", 0),
+                "mime": item.get("file", {}).get("mimeType", "")
+            })
+        return {"path": path or folder_id or "root", "items": items, "total": len(items)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/onedrive/read")
+async def onedrive_read(request: Request, file_id: str = "", path: str = ""):
+    await get_user(request)
+    token = os.environ.get('ONEDRIVE_TOKEN', '')
+    if not token:
+        raise HTTPException(400, "ONEDRIVE_TOKEN nuk eshte konfiguruar")
+    try:
+        async with _httpx.AsyncClient(timeout=30) as http:
+            # Merr metadata
+            if file_id:
+                meta_url = f"https://graph.microsoft.com/v1.0/me/drive/items/{file_id}"
+            else:
+                meta_url = f"https://graph.microsoft.com/v1.0/me/drive/root:/{path}"
+            meta = await http.get(meta_url, headers={"Authorization": f"Bearer {token}"})
+            meta_data = meta.json()
+            file_name = meta_data.get("name", "")
+            mime = meta_data.get("file", {}).get("mimeType", "")
+            
+            # Shkarko permbajtjen
+            if file_id:
+                dl_url = f"https://graph.microsoft.com/v1.0/me/drive/items/{file_id}/content"
+            else:
+                dl_url = f"https://graph.microsoft.com/v1.0/me/drive/root:/{path}:/content"
+            
+            dl = await http.get(dl_url, headers={"Authorization": f"Bearer {token}"}, follow_redirects=True)
+            content = dl.content
+            text = ""
+            
+            # Lexo sipas tipit
+            if "excel" in mime or file_name.endswith(('.xlsx', '.xls')):
+                import openpyxl
+                wb = openpyxl.load_workbook(io.BytesIO(content))
+                for sheet in wb.sheetnames:
+                    ws = wb[sheet]
+                    text += f"Sheet: {sheet}\n"
+                    for row in ws.iter_rows(values_only=True):
+                        r = [str(c) if c is not None else '' for c in row]
+                        if any(r): text += " | ".join(r) + "\n"
+            elif "pdf" in mime or file_name.endswith('.pdf'):
+                import PyPDF2
+                reader = PyPDF2.PdfReader(io.BytesIO(content))
+                for page in reader.pages:
+                    text += page.extract_text() + "\n"
+            elif "word" in mime or file_name.endswith('.docx'):
+                import docx
+                doc = docx.Document(io.BytesIO(content))
+                text = "\n".join([p.text for p in doc.paragraphs])
+            else:
+                text = content.decode('utf-8', errors='ignore')
+            
+            return {"file": file_name, "content": text[:10000], "mime": mime}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, str(e))
