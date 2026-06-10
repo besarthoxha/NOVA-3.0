@@ -277,8 +277,14 @@ function getMonthYear(text){
 
 function detectQuery(text){
   var l=text.toLowerCase();
-  // OneDrive - kontrollo fillimisht
-  if(/onedrive|dosje|cfare ka|hyn te |hyn tek |lexo|gjej.*file|gjej.*excel|gjej.*dokument|shiko.*file/.test(l)) return 'onedrive';
+  // OneDrive - GJITHMONE kontrollo fillimisht
+  var odFolders=['besart','drini','erblini','meti','tjera'];
+  var hasFolder=false;
+  for(var fi=0;fi<odFolders.length;fi++){
+    if(l.indexOf(odFolders[fi])!==-1){hasFolder=true;break;}
+  }
+  if(hasFolder) return 'onedrive';
+  if(/onedrive|cfare ka ne od|hap.*file|lexo.*file|gjej.*file|gjej.*excel|gjej.*pdf|gjej.*word|gjej.*dokument/.test(l)) return 'onedrive';
   // SQL
   if(/sa ndermardh|sa kompani|cilat jan/.test(l)) return 'companies';
   if(/arketushm|debitor|kush na ka borxh/.test(l)) return 'receivables';
