@@ -65,42 +65,62 @@ def get_companies_cached():
         return _companies_cache["data"]
     
     try:
-        conn = get_sql_conn("master")
+        # Lexo direkt nga BilancMaster.dbo.Company
+        conn = get_sql_conn("BilancMaster")
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT name FROM sys.databases 
-            WHERE name NOT IN ('master','tempdb','model','msdb')
-            AND state_desc='ONLINE'
-            AND name != 'BilancMaster'
-            ORDER BY name
+            SELECT DBName, Name, ISNULL(NIPT,'') as NIPT, 
+                   ISNULL(Address,'') as Address,
+                   ISNULL(Phone,'') as Phone,
+                   ISNULL(Email,'') as Email,
+                   Status, Deleted
+            FROM dbo.Company
+            WHERE Deleted=0 AND Status=1
+            ORDER BY Name
         """)
-        databases = [r[0] for r in cursor.fetchall()]
+        rows = cursor.fetchall()
         conn.close()
-    except:
-        return _companies_cache["data"]
-
-    # Pastro emrin: hiq "Bilanc" nga fillimi
-    def clean_name(db):
-        n = db
-        if n.lower().startswith('bilanc'):
-            n = n[6:]
-        # Shto hapesire para shkronjes se madhe (CamelCase → me hapesire)
-        import re
-        n = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', n)
-        return n.strip()
-
-    companies = []
-    for db in databases:
-        emri = clean_name(db)
-        companies.append({
-            "db_name": db,
-            "emri": emri,
-            "emri_lower": emri.lower()
-        })
-
-    _companies_cache["data"] = companies
-    _companies_cache["ts"] = now
-    return companies
+        
+        companies = []
+        for r in rows:
+            db_name = r[0]
+            emri = r[1] or db_name
+            companies.append({
+                "db_name": db_name,
+                "emri": emri,
+                "emri_lower": emri.lower(),
+                "nipt": r[2],
+                "address": r[3],
+                "phone": r[4],
+                "email": r[5]
+            })
+        
+        _companies_cache["data"] = companies
+        _companies_cache["ts"] = now
+        return companies
+    except Exception as e:
+        # Fallback - lexo nga sys.databases
+        try:
+            conn = get_sql_conn("master")
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT name FROM sys.databases 
+                WHERE name NOT IN ('master','tempdb','model','msdb','BilancMaster')
+                AND state_desc='ONLINE' ORDER BY name
+            """)
+            databases = [r[0] for r in cursor.fetchall()]
+            conn.close()
+            companies = []
+            for db in databases:
+                import re
+                n = db[6:] if db.lower().startswith('bilanc') else db
+                n = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', n).strip()
+                companies.append({"db_name": db, "emri": n, "emri_lower": n.lower(), "nipt": "", "address": "", "phone": "", "email": ""})
+            _companies_cache["data"] = companies
+            _companies_cache["ts"] = now
+            return companies
+        except:
+            return _companies_cache["data"]
 
 def find_company_db(text):
     """Gjen database-n e kompanise bazuar ne tekst te lire"""
