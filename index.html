@@ -277,7 +277,9 @@ function getMonthYear(text){
 
 function detectQuery(text){
   var l=text.toLowerCase();
-  // OneDrive - GJITHMONE kontrollo fillimisht
+  // Kompanitë - kontrollo FILLIMISHT
+  if(/sa ndermarj|cilat ndermarj|cilat jan ndermarj|lista.*ndermarj|ndermardhet|kemi.*kompani|kompanite|sa kompani|cilat kompani|ndermarjet tona|po i sheh.*ndermarj/.test(l)) return 'companies';
+  // OneDrive - GJITHMONE kontrollo pastaj
   var odFolders=['besart','drini','erblini','meti','tjera'];
   var hasFolder=false;
   for(var fi=0;fi<odFolders.length;fi++){
