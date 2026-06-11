@@ -296,6 +296,7 @@ function detectQuery(text){
   if(/banka|bankes|harmonizim/.test(l)&&!/arka/.test(l)) return 'bank';
   if(/arka/.test(l)&&/banka/.test(l)) return 'cash-bank';
   if(/arka|arkes/.test(l)) return 'cash';
+  if(/detaj.*blerj|si.*blerj.*kon|cfar.*blerj|breakdown.*blerj|shpenzim.*cka|cka.*shpenzim|kontu.*blerj/.test(l)) return 'purchase-detail';
   if(/detaj.*fatur|rreshtat.*fatur|cka.*fatur|si.*fatur.*kon|artikuj.*fatur/.test(l)) return 'sales-detail';
   if(/shitj|fatura.*shitj/.test(l)) return 'sales';
   if(/blerj|fatura.*blerj/.test(l)) return 'purchases';
@@ -365,6 +366,21 @@ async function queryData(type, text){
     if(type==='companies'){
       var r=await api('/sql/companies');
       if(r.ok){var d=await r.json();companiesList=d.companies||[];return d;}
+      return null;
+    }
+    if(type==='purchase-detail'){
+      var company=findCompany(text);
+      var cp=company?('?company='+encodeURIComponent(company.db_name)):'';
+      // Merr blerjet dhe detajet e fatures se fundit
+      var sr=await api('/sql/purchases'+cp);
+      if(sr.ok){
+        var sd=await sr.json();
+        if(sd.data&&sd.data.length>0){
+          var firstId=sd.data[0].doc_number;
+          var dr=await api('/sql/purchase-detail'+cp+(cp?'&':'?')+'doc_number='+encodeURIComponent(firstId));
+          if(dr.ok) return await dr.json();
+        }
+      }
       return null;
     }
     if(type==='sales-detail'){
