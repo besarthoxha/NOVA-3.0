@@ -626,6 +626,169 @@ async def speak(request: Request):
                   'voice_settings':{'stability':0.5,'similarity_boost':0.75}})
     return Response(content=res.content,media_type='audio/mpeg')
 
+@app.get("/sql/sales-detail")
+async def sql_sales_detail(request: Request, company: str = "", doc_id: int = 0, doc_number: str = ""):
+    """Detajet e brendshme te nje fature shitjeje — artikujt, sasit, cmimet, kontot"""
+    await get_user(request)
+    db, emri = find_company_db(company) if company else (get_companies_cached()[0]["db_name"], "")
+    try:
+        conn = get_sql_conn(db); cursor = conn.cursor()
+        
+        # Gjej header-in
+        if doc_id > 0:
+            cursor.execute("""
+                SELECT s.ID, s.DocNumber, CONVERT(varchar,s.DocDate,103),
+                    ISNULL(c.Name,'') as Klienti, s.Total, s.TotalWithVAT,
+                    s.AmountPaid, CONVERT(varchar,s.DueDate,103)
+                FROM o2SalesDocHeader s
+                LEFT JOIN o2Client c ON s.ClientID=c.ID
+                WHERE s.ID=%d AND s.Deleted=0
+            """, (doc_id,))
+        elif doc_number:
+            cursor.execute("""
+                SELECT s.ID, s.DocNumber, CONVERT(varchar,s.DocDate,103),
+                    ISNULL(c.Name,'') as Klienti, s.Total, s.TotalWithVAT,
+                    s.AmountPaid, CONVERT(varchar,s.DueDate,103)
+                FROM o2SalesDocHeader s
+                LEFT JOIN o2Client c ON s.ClientID=c.ID
+                WHERE s.DocNumber=%s AND s.Deleted=0
+            """, (doc_number,))
+        else:
+            raise HTTPException(400, "Duhet doc_id ose doc_number")
+        
+        header = cursor.fetchone()
+        if not header:
+            raise HTTPException(404, "Fatura nuk u gjet")
+        
+        # Merr detajet e rreshtave me kontim
+        cursor.execute("""
+            SELECT 
+                b.ID,
+                ISNULL(i.Description,'') as Artikulli,
+                ISNULL(i.Code,'') as KodiArtikullit,
+                b.Quantity,
+                b.Price,
+                b.Quantity * b.Price as Vlera,
+                b.VATCoeficient,
+                b.Quantity * b.Price * (1 + b.VATCoeficient) as VleraMeTVSH,
+                ISNULL(b.Notes,'') as Shenime,
+                ISNULL(a_s.Code,'') as LlogariShitjes,
+                ISNULL(a_s.Description,'') as EmriLlogarise
+            FROM o2SalesDocBody b
+            LEFT JOIN o2Item i ON b.ItemID = i.ID
+            LEFT JOIN o2ItemAccountingScheme ias ON i.AccountingSchemeID = ias.ID
+            LEFT JOIN o2Account a_s ON ias.SalesAccID = a_s.ID
+            WHERE b.HeaderID=%d AND b.Deleted=0
+            ORDER BY b.ID
+        """, (header[0],))
+        
+        rows = cursor.fetchall()
+        conn.close()
+        
+        return {
+            "kompania": emri,
+            "fatura": {
+                "id": header[0],
+                "numri": header[1],
+                "data": header[2],
+                "klienti": header[3],
+                "total": round(float(header[4]),2),
+                "total_tvsh": round(float(header[5]),2),
+                "paguar": round(float(header[6]),2),
+                "borxhi": round(float(header[5]-header[6]),2),
+                "afati": header[7]
+            },
+            "rreshtat": [{
+                "id": r[0],
+                "artikulli": r[1],
+                "kodi_artikullit": r[2],
+                "sasia": round(float(r[3]),3),
+                "cmimi": round(float(r[4]),2),
+                "vlera": round(float(r[5]),2),
+                "tvsh_koef": float(r[6]),
+                "vlera_me_tvsh": round(float(r[7]),2),
+                "shenime": r[8],
+                "llogaria": r[9],
+                "emri_llogarise": r[10]
+            } for r in rows],
+            "total_rreshta": len(rows)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/sql/purchase-detail")
+async def sql_purchase_detail(request: Request, company: str = "", doc_id: int = 0, doc_number: str = ""):
+    """Detajet e brendshme te nje fature blerje"""
+    await get_user(request)
+    db, emri = find_company_db(company) if company else (get_companies_cached()[0]["db_name"], "")
+    try:
+        conn = get_sql_conn(db); cursor = conn.cursor()
+        
+        if doc_id > 0:
+            cursor.execute("""
+                SELECT p.ID, p.DocNumber, CONVERT(varchar,p.DocDate,103),
+                    ISNULL(s.Name,'') as Furnitori, p.Total, p.TotalWithVAT,
+                    p.AmountPaid, CONVERT(varchar,p.DueDate,103)
+                FROM o2PurchaseDocHeader p
+                LEFT JOIN o2Supplier s ON p.SupplierID=s.ID
+                WHERE p.ID=%d AND p.Deleted=0
+            """, (doc_id,))
+        else:
+            raise HTTPException(400, "Duhet doc_id")
+        
+        header = cursor.fetchone()
+        if not header:
+            raise HTTPException(404, "Fatura nuk u gjet")
+        
+        cursor.execute("""
+            SELECT 
+                b.ID,
+                ISNULL(i.Description,'') as Artikulli,
+                ISNULL(i.Code,'') as KodiArtikullit,
+                b.Quantity, b.Price,
+                b.Quantity * b.Price as Vlera,
+                b.VATCoeficient,
+                b.Quantity * b.Price * (1 + b.VATCoeficient) as VleraMeTVSH,
+                ISNULL(b.Notes,'') as Shenime,
+                ISNULL(a_p.Code,'') as LlogariBlerjes,
+                ISNULL(a_p.Description,'') as EmriLlogarise
+            FROM o2PurchaseDocBody b
+            LEFT JOIN o2Item i ON b.ItemID = i.ID
+            LEFT JOIN o2ItemAccountingScheme ias ON i.AccountingSchemeID = ias.ID
+            LEFT JOIN o2Account a_p ON ias.PurchaseAccID = a_p.ID
+            WHERE b.HeaderID=%d AND b.Deleted=0
+            ORDER BY b.ID
+        """, (header[0],))
+        
+        rows = cursor.fetchall()
+        conn.close()
+        
+        return {
+            "kompania": emri,
+            "fatura": {
+                "id": header[0], "numri": header[1], "data": header[2],
+                "furnitori": header[3], "total": round(float(header[4]),2),
+                "total_tvsh": round(float(header[5]),2),
+                "paguar": round(float(header[6]),2),
+                "borxhi": round(float(header[5]-header[6]),2),
+                "afati": header[7]
+            },
+            "rreshtat": [{
+                "id": r[0], "artikulli": r[1], "kodi_artikullit": r[2],
+                "sasia": round(float(r[3]),3), "cmimi": round(float(r[4]),2),
+                "vlera": round(float(r[5]),2), "tvsh_koef": float(r[6]),
+                "vlera_me_tvsh": round(float(r[7]),2), "shenime": r[8],
+                "llogaria": r[9], "emri_llogarise": r[10]
+            } for r in rows],
+            "total_rreshta": len(rows)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
 @app.get("/")
 async def root(): return FileResponse("index.html")
 
