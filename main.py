@@ -735,8 +735,26 @@ async def sql_purchase_detail(request: Request, company: str = "", doc_id: int =
                 LEFT JOIN o2Supplier s ON p.SupplierID=s.ID
                 WHERE p.ID=%d AND p.Deleted=0
             """, (doc_id,))
+        elif doc_number:
+            cursor.execute("""
+                SELECT p.ID, p.DocNumber, CONVERT(varchar,p.DocDate,103),
+                    ISNULL(s.Name,'') as Furnitori, p.Total, p.TotalWithVAT,
+                    p.AmountPaid, CONVERT(varchar,p.DueDate,103)
+                FROM o2PurchaseDocHeader p
+                LEFT JOIN o2Supplier s ON p.SupplierID=s.ID
+                WHERE p.DocNumber=%s AND p.Deleted=0
+            """, (doc_number,))
         else:
-            raise HTTPException(400, "Duhet doc_id")
+            # Merr faturën e fundit
+            cursor.execute("""
+                SELECT TOP 1 p.ID, p.DocNumber, CONVERT(varchar,p.DocDate,103),
+                    ISNULL(s.Name,'') as Furnitori, p.Total, p.TotalWithVAT,
+                    p.AmountPaid, CONVERT(varchar,p.DueDate,103)
+                FROM o2PurchaseDocHeader p
+                LEFT JOIN o2Supplier s ON p.SupplierID=s.ID
+                WHERE p.Deleted=0
+                ORDER BY p.DocDate DESC
+            """)
         
         header = cursor.fetchone()
         if not header:
