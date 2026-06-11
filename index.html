@@ -134,6 +134,7 @@ var recognition = null;
 var isListening = false;
 var voiceEnabled = false;
 var companiesList = [];
+var lastCompany = null; // Kompania e fundit e perdorur
 var msgsEl = document.getElementById('msgs');
 var inpEl = document.getElementById('inp');
 var sbEl = document.getElementById('send-btn');
@@ -252,16 +253,26 @@ function refreshOD(){
 function findCompany(text){
   if(!companiesList.length) return null;
   var l=text.toLowerCase();
+  // Match i sakte
   for(var i=0;i<companiesList.length;i++){
-    if(l.indexOf(companiesList[i].emri_lower)!==-1) return companiesList[i];
+    if(l.indexOf(companiesList[i].emri_lower)!==-1){
+      lastCompany=companiesList[i];
+      return companiesList[i];
+    }
   }
+  // Match i pjesshem
   var words=l.split(/\s+/);
   for(var w=0;w<words.length;w++){
     if(words[w].length<3) continue;
     for(var i=0;i<companiesList.length;i++){
-      if(companiesList[i].emri_lower.indexOf(words[w])!==-1) return companiesList[i];
+      if(companiesList[i].emri_lower.indexOf(words[w])!==-1){
+        lastCompany=companiesList[i];
+        return companiesList[i];
+      }
     }
   }
+  // Nese nuk gjet, kthe lastCompany nese ekziston
+  if(lastCompany) return lastCompany;
   return null;
 }
 
