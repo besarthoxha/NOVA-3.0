@@ -620,7 +620,7 @@ async def speak(request: Request):
     if not el_key: raise HTTPException(400,"ElevenLabs key mungon")
     import httpx
     async with httpx.AsyncClient(timeout=30) as http:
-        res=await http.post(f'https://api.elevenlabs.io/v1/text-to-speech/ocb5roe7gELIkZqiOElv',
+        res=await http.post(f'https://api.elevenlabs.io/v1/text-to-speech/4tRn1lSkEn13EVTuqb0g',
             headers={'Content-Type':'application/json','xi-api-key':el_key},
             json={'text':text,'model_id':'eleven_multilingual_v2',
                   'voice_settings':{'stability':0.5,'similarity_boost':0.75}})
