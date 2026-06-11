@@ -296,6 +296,7 @@ function detectQuery(text){
   if(/banka|bankes|harmonizim/.test(l)&&!/arka/.test(l)) return 'bank';
   if(/arka/.test(l)&&/banka/.test(l)) return 'cash-bank';
   if(/arka|arkes/.test(l)) return 'cash';
+  if(/detaj.*fatur|rreshtat.*fatur|cka.*fatur|si.*fatur.*kon|artikuj.*fatur/.test(l)) return 'sales-detail';
   if(/shitj|fatura.*shitj/.test(l)) return 'sales';
   if(/blerj|fatura.*blerj/.test(l)) return 'purchases';
   if(/klient|liste.*klient/.test(l)) return 'clients';
@@ -364,6 +365,27 @@ async function queryData(type, text){
     if(type==='companies'){
       var r=await api('/sql/companies');
       if(r.ok){var d=await r.json();companiesList=d.companies||[];return d;}
+      return null;
+    }
+    if(type==='sales-detail'){
+      // Kerko faturen me numrin ose ID-ne
+      var numMatch=text.match(/fatur[ae]?\s+(?:nr\.?|numri|#)?\s*(\d+)/i);
+      var company=findCompany(text);
+      var cp=company?('?company='+encodeURIComponent(company.db_name)):'';
+      if(numMatch){
+        var r=await api('/sql/sales-detail'+cp+(cp?'&':'?')+'doc_number='+numMatch[1]);
+        if(r.ok) return await r.json();
+      }
+      // Merr faturat e fundit dhe detajet e tyre
+      var sr=await api('/sql/sales'+cp);
+      if(sr.ok){
+        var sd=await sr.json();
+        if(sd.data&&sd.data.length>0){
+          var firstId=sd.data[0].doc_number;
+          var dr=await api('/sql/sales-detail'+cp+(cp?'&':'?')+'doc_number='+encodeURIComponent(firstId));
+          if(dr.ok) return await dr.json();
+        }
+      }
       return null;
     }
     if(type==='cash-bank'){
