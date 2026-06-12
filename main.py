@@ -212,8 +212,9 @@ def build_system(user: dict) -> str:
     companies = get_companies_cached()
     company_list = "\n".join([f"  - {c['emri']} (db: {c['db_name']})" for c in companies])
 
-    has_od = bool(os.environ.get('ONEDRIVE_TOKEN', ''))
-    onedrive_info = "Ke akses ne OneDrive te BOLD Consulting. Endpoint-et: /onedrive/files (dosjet), /onedrive/search?q=X (kerkim). Dosjet: BESARTI, DRINI, ERBLINI, METI, TJERA. KURRE thuaj nuk kam qasje." if has_od else "OneDrive nuk eshte konfiguruar."
+    # OneDrive gjithmone aktiv nese ka OAuth ose token
+    has_od = bool(os.environ.get('ONEDRIVE_TOKEN', '') or os.environ.get('ONEDRIVE_CLIENT_ID', ''))
+    onedrive_info = "Ke akses DIREKT ne OneDrive te BOLD Consulting nepermjet OAuth. Endpoint-et: /onedrive/files (dosjet), /onedrive/search?q=X (kerkim), /onedrive/read?file_id=X (lexo file). Dosjet kryesore: BESARTI, DRINI, ERBLINI, METI, TJERA. Token rifresohet automatikisht. KURRE thuaj nuk kam qasje — gjithmone provo endpoint-et." if has_od else "OneDrive nuk eshte konfiguruar."
 
     return f"""Ti je Nova — asistente personale e BOLD Consulting. Person i vertete, jo chatbot.
 
