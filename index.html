@@ -371,13 +371,19 @@ async function queryData(type, text){
           if(files.length>0){
             // Auto-lexo fajllin e pare
             var f=files[0];
+            console.log('Found file:', f.name, 'ID:', f.id);
             var readUrl='/onedrive/read?file_id='+encodeURIComponent(f.id);
+            console.log('Reading:', readUrl);
             var rr=await api(readUrl);
+            console.log('Read status:', rr.status);
             if(rr.ok){
               var rd=await rr.json();
+              console.log('Content length:', (rd.content||'').length);
               return {found:f.name,id:f.id,url:f.url,content:rd.content,mime:rd.mime};
             }
-            return {found:f.name,id:f.id,url:f.url,note:'Nuk munda ta lexoj permbajtjen'};
+            var err=await rr.json().catch(function(){return {};});
+            console.log('Read error:', err);
+            return {found:f.name,id:f.id,url:f.url,note:'Nuk munda ta lexoj: '+JSON.stringify(err)};
           }
           return {search:searchTerm,items:sd.items,total:sd.total,message:'Nuk u gjet.'};
         }
