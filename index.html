@@ -371,22 +371,40 @@ async function queryData(type, text){
           if(files.length>0){
             // Auto-lexo fajllin e pare
             var f=files[0];
-            var rr=await api('/onedrive/read?file_id='+encodeURIComponent(f.id));
+            var readUrl='/onedrive/read?file_id='+encodeURIComponent(f.id);
+            var rr=await api(readUrl);
             if(rr.ok){
               var rd=await rr.json();
-              return {found:f.name,id:f.id,url:f.url,content:rd.content};
+              return {found:f.name,id:f.id,url:f.url,content:rd.content,mime:rd.mime};
             }
-            return {found:f.name,id:f.id,url:f.url};
+            return {found:f.name,id:f.id,url:f.url,note:'Nuk munda ta lexoj permbajtjen'};
           }
-          return {search:searchTerm,results:sd.items,message:'Nuk u gjet.'};
+          return {search:searchTerm,items:sd.items,total:sd.total,message:'Nuk u gjet.'};
         }
       }
 
-      // Hap dosje specifike
+      // Hap dosje specifike dhe kerko file brenda
       for(var fn in OD_FOLDERS){
         if(l.indexOf(fn)!==-1){
           var fr=await api('/onedrive/files?folder_id='+OD_FOLDERS[fn]);
-          if(fr.ok) return await fr.json();
+          if(fr.ok){
+            var fd=await fr.json();
+            // Nese ka kerkese per file specifik brenda dosjes
+            if(searchTerm&&searchTerm.length>2){
+              var matchFile=null;
+              var items=fd.items||[];
+              for(var fi=0;fi<items.length;fi++){
+                if(items[fi].name.toLowerCase().indexOf(searchTerm.toLowerCase())!==-1&&items[fi].type==='file'){
+                  matchFile=items[fi]; break;
+                }
+              }
+              if(matchFile){
+                var rr=await api('/onedrive/read?file_id='+encodeURIComponent(matchFile.id));
+                if(rr.ok){var rd=await rr.json();return {found:matchFile.name,id:matchFile.id,url:matchFile.url,content:rd.content};}
+              }
+            }
+            return fd;
+          }
         }
       }
 
