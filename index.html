@@ -242,12 +242,23 @@ function chkMem(text){
 }
 
 function refreshOD(){
-  var t=prompt('Token i ri nga graph-explorer (Access token tab):');
-  if(!t||!t.trim()) return;
-  api('/onedrive/token',{method:'POST',body:JSON.stringify({token:t.trim()})})
-  .then(function(r){return r.json();})
-  .then(function(d){ addMsg('nova',d.ok?'OneDrive u rifreshua.':'Token i pavlefshem.'); })
-  .catch(function(){ addMsg('nova','Problem me token-in.'); });
+  // Kontrollo statusin e lidhjes
+  api('/auth/status').then(function(r){return r.json();}).then(function(d){
+    if(d.connected){
+      addMsg('nova','OneDrive eshte i lidhur dhe aktiv.');
+    } else {
+      // Hap OAuth flow
+      var w=window.open(BASE+'/auth/onedrive?token='+encodeURIComponent(token),'OneDrive Auth','width=500,height=600');
+      var check=setInterval(function(){
+        if(w&&w.closed){
+          clearInterval(check);
+          addMsg('nova','OneDrive u lidh! Tani mund te aksesoj dosjet.');
+        }
+      },1000);
+    }
+  }).catch(function(){
+    window.open(BASE+'/auth/onedrive','OneDrive Auth','width=500,height=600');
+  });
 }
 
 function findCompany(text){
