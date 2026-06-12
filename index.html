@@ -101,6 +101,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <input type="file" id="file-inp" accept=".xlsx,.xls,.pdf,.txt,.csv,.docx" style="display:none" onchange="uploadFile(this)">
       <button class="hbtn" id="voice-enable-btn" onclick="enableVoice()" style="background:rgba(212,175,55,0.15);color:var(--gold);border-color:rgba(212,175,55,0.4)">&#128266; zer</button>
       <button class="hbtn" onclick="refreshOD()" title="Rifresho OneDrive">&#9729; OD</button>
+      <button class="hbtn" onclick="testOD()" style="background:rgba(16,185,129,0.15);color:var(--green)">test OD</button>
       <button class="hbtn" onclick="document.getElementById('file-inp').click()">ngarko</button>
       <button class="hbtn" onclick="clearChat()">reset</button>
       <button class="hbtn danger" onclick="doLogout()">dil</button>
@@ -239,6 +240,20 @@ function chkMem(text){
     var info=text.replace(/^mbaje mend\s*/i,'').trim();
     if(info){mem.notes.push(info);updMem();saveMem();}
   }
+}
+
+async function testOD(){
+  addMsg('user','Test OneDrive...');
+  try{
+    var r = await api('/onedrive/files');
+    if(r.ok){
+      var d = await r.json();
+      addMsg('nova','OneDrive OK - ' + d.total + ' items: ' + (d.items||[]).map(function(i){return i.name;}).join(', '));
+    } else {
+      var e = await r.json();
+      addMsg('nova','Error: ' + JSON.stringify(e));
+    }
+  }catch(e){addMsg('nova','Exception: '+e.message);}
 }
 
 function refreshOD(){
