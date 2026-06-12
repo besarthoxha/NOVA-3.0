@@ -947,15 +947,19 @@ async def onedrive_read(request: Request, file_id: str = "", path: str = ""):
             text = ""
             
             # Lexo sipas tipit
-            if "excel" in mime or file_name.endswith(('.xlsx', '.xls')):
+            if "excel" in mime or file_name.endswith(('.xlsx', '.xls')) or file_name.endswith('.xls'):
                 import openpyxl
-                wb = openpyxl.load_workbook(io.BytesIO(content))
-                for sheet in wb.sheetnames:
-                    ws = wb[sheet]
-                    text += f"Sheet: {sheet}\n"
-                    for row in ws.iter_rows(values_only=True):
-                        r = [str(c) if c is not None else '' for c in row]
-                        if any(r): text += " | ".join(r) + "\n"
+                try:
+                    wb = openpyxl.load_workbook(io.BytesIO(content), data_only=True)
+                    for sheet in wb.sheetnames:
+                        ws = wb[sheet]
+                        text += f"Sheet: {sheet}\n"
+                        for row in ws.iter_rows(values_only=True):
+                            r = [str(c) if c is not None else '' for c in row]
+                            if any(v for v in r if v and v.strip()):
+                                text += " | ".join(r) + "\n"
+                except Exception as ex:
+                    text = f"Excel parse error: {ex}. Content size: {len(content)}"
             elif "pdf" in mime or file_name.endswith('.pdf'):
                 import PyPDF2
                 reader = PyPDF2.PdfReader(io.BytesIO(content))
