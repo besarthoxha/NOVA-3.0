@@ -818,10 +818,12 @@ import httpx as _httpx
 
 @app.get("/onedrive/files")
 async def onedrive_files(request: Request, folder_id: str = "root"):
-    await get_user(request)
-    token = os.environ.get('ONEDRIVE_TOKEN', '')
+    user = await get_user(request)
+    token = await get_od_token(user['username'])
     if not token:
-        raise HTTPException(400, "ONEDRIVE_TOKEN nuk eshte konfiguruar")
+        token = os.environ.get('ONEDRIVE_TOKEN', '')
+    if not token:
+        raise HTTPException(401, "OneDrive nuk eshte i lidhur. Shtyp butonin OD.")
     try:
         url = f"https://graph.microsoft.com/v1.0/me/drive/{folder_id}/children" if folder_id == "root" else f"https://graph.microsoft.com/v1.0/me/drive/items/{folder_id}/children"
         async with _httpx.AsyncClient() as http:
@@ -848,10 +850,12 @@ async def onedrive_files(request: Request, folder_id: str = "root"):
 
 @app.get("/onedrive/search")
 async def onedrive_search(request: Request, q: str = ""):
-    await get_user(request)
-    token = os.environ.get('ONEDRIVE_TOKEN', '')
+    user = await get_user(request)
+    token = await get_od_token(user['username'])
     if not token:
-        raise HTTPException(400, "ONEDRIVE_TOKEN nuk eshte konfiguruar")
+        token = os.environ.get('ONEDRIVE_TOKEN', '')
+    if not token:
+        raise HTTPException(401, "OneDrive nuk eshte i lidhur")
     try:
         async with _httpx.AsyncClient() as http:
             res = await http.get(
@@ -875,10 +879,12 @@ async def onedrive_search(request: Request, q: str = ""):
 
 @app.get("/onedrive/folder")
 async def onedrive_folder(request: Request, path: str = "", folder_id: str = ""):
-    await get_user(request)
-    token = os.environ.get('ONEDRIVE_TOKEN', '')
+    user = await get_user(request)
+    token = await get_od_token(user['username'])
     if not token:
-        raise HTTPException(400, "ONEDRIVE_TOKEN nuk eshte konfiguruar")
+        token = os.environ.get('ONEDRIVE_TOKEN', '')
+    if not token:
+        raise HTTPException(401, "OneDrive nuk eshte i lidhur")
     try:
         async with _httpx.AsyncClient() as http:
             if folder_id:
@@ -911,10 +917,12 @@ async def onedrive_folder(request: Request, path: str = "", folder_id: str = "")
 
 @app.get("/onedrive/read")
 async def onedrive_read(request: Request, file_id: str = "", path: str = ""):
-    await get_user(request)
-    token = os.environ.get('ONEDRIVE_TOKEN', '')
+    user = await get_user(request)
+    token = await get_od_token(user['username'])
     if not token:
-        raise HTTPException(400, "ONEDRIVE_TOKEN nuk eshte konfiguruar")
+        token = os.environ.get('ONEDRIVE_TOKEN', '')
+    if not token:
+        raise HTTPException(401, "OneDrive nuk eshte i lidhur")
     try:
         async with _httpx.AsyncClient(timeout=30) as http:
             # Merr metadata
