@@ -256,6 +256,87 @@ async function testOD(){
   }catch(e){addMsg('nova','Exception: '+e.message);}
 }
 
+async function readExcel(fileId, fileName){
+  addMsg('user', 'Duke lexuar: ' + fileName);
+  showTyp();
+  try{
+    var r = await api('/onedrive/read?file_id='+encodeURIComponent(fileId));
+    if(r.ok){
+      var d = await r.json();
+      var content = d.content || 'Bosh';
+      // Dergo te Nova
+      var msg = 'Lexova Excel-in "' + (d.file||fileName) + '" nga OneDrive. Permbajtja:\n' + content.substring(0,8000);
+      hist.push({role:'user', content: msg});
+      var res = await api('/chat',{method:'POST',body:JSON.stringify({messages:hist,memory:mem})});
+      var dd = await res.json();
+      var reply = dd.reply || '';
+      remTyp(); addMsg('nova', reply); speak(reply);
+      hist.push({role:'assistant', content: reply});
+    } else {
+      remTyp(); addMsg('nova', 'Error: ' + r.status);
+    }
+  }catch(e){remTyp(); addMsg('nova','Exception: '+e.message);}
+}
+
+// Kerko dhe lexo file automatikisht
+async function searchAndRead(query, folderName){
+  addMsg('user', 'Duke kërkuar: ' + query);
+  showTyp();
+  try{
+    // Hap dosjen e specifikuar
+    var folderIds = {
+      'besart':'77BD7A2302C4C4AF!4066',
+      'drini':'77BD7A2302C4C4AF!s3ed613a861dc42f0a6b55a84c5e31657',
+      'erblini':'77BD7A2302C4C4AF!1131',
+      'meti':'77BD7A2302C4C4AF!123',
+      'tjera':'77BD7A2302C4C4AF!sfa24f199b6e8460893947c6aac537045'
+    };
+    var folderId = folderName ? folderIds[folderName.toLowerCase()] : null;
+    var url = folderId ? '/onedrive/files?folder_id='+folderId : '/onedrive/search?q='+encodeURIComponent(query);
+    var r = await api(url);
+    if(!r.ok){remTyp(); addMsg('nova','Error: '+r.status); return;}
+    var d = await r.json();
+    var items = d.items || [];
+    
+    // Gjej file-in
+    var found = null;
+    var ql = query.toLowerCase();
+    for(var i=0;i<items.length;i++){
+      if(items[i].type==='file' && items[i].name.toLowerCase().indexOf(ql)!==-1){
+        found = items[i]; break;
+      }
+    }
+    
+    // Nese nuk gjet ne folder, kerko globalisht
+    if(!found && folderId){
+      var sr = await api('/onedrive/search?q='+encodeURIComponent(query));
+      if(sr.ok){
+        var sd = await sr.json();
+        var sitems = sd.items||[];
+        for(var i=0;i<sitems.length;i++){
+          if(sitems[i].type==='file'){found=sitems[i];break;}
+        }
+      }
+    }
+    
+    if(!found){remTyp(); addMsg('nova','Nuk u gjet: '+query); return;}
+    
+    // Lexo
+    var rr = await api('/onedrive/read?file_id='+encodeURIComponent(found.id));
+    if(!rr.ok){remTyp(); addMsg('nova','Nuk munda ta lexoj: '+found.name); return;}
+    var rd = await rr.json();
+    var content = rd.content || '';
+    
+    // Dergo te Nova me kontekst
+    var msg = '[KONTEKST ONEDRIVE] Lexova "'+found.name+'":\n'+content.substring(0,8000);
+    var messages = hist.slice(0,-1).concat([{role:'user', content: hist[hist.length-1].content + '\n\n' + msg}]);
+    var res = await api('/chat',{method:'POST',body:JSON.stringify({messages:messages,memory:mem})});
+    var dd = await res.json();
+    remTyp(); addMsg('nova', dd.reply||''); speak(dd.reply||'');
+    hist.push({role:'assistant', content: dd.reply||''});
+  }catch(e){remTyp(); addMsg('nova','Exception: '+e.message);}
+}
+
 function refreshOD(){
   // Kontrollo statusin e lidhjes
   api('/auth/status').then(function(r){return r.json();}).then(function(d){
