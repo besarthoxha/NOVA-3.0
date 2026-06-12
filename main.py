@@ -985,3 +985,131 @@ async def update_onedrive_token(request: Request):
     if res.status_code == 200:
         return {"ok": True}
     raise HTTPException(401, "Token i pavlefshëm")
+
+# ─── ONEDRIVE OAUTH ──────────────────────────────────────
+
+async def save_od_token(user_id: str, access_token: str, refresh_token: str, expires_in: int):
+    conn = await get_db()
+    import time
+    expires_at = int(time.time()) + expires_in
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS od_tokens (
+            user_id TEXT PRIMARY KEY,
+            access_token TEXT,
+            refresh_token TEXT,
+            expires_at BIGINT,
+            updated_at TIMESTAMP DEFAULT NOW()
+        )
+    """)
+    await conn.execute("""
+        INSERT INTO od_tokens (user_id, access_token, refresh_token, expires_at)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id) DO UPDATE 
+        SET access_token=$2, refresh_token=$3, expires_at=$4, updated_at=NOW()
+    """, user_id, access_token, refresh_token, expires_at)
+    await conn.close()
+
+async def get_od_token(user_id: str):
+    conn = await get_db()
+    try:
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS od_tokens (
+                user_id TEXT PRIMARY KEY,
+                access_token TEXT,
+                refresh_token TEXT,
+                expires_at BIGINT,
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        row = await conn.fetchrow('SELECT * FROM od_tokens WHERE user_id=$1', user_id)
+        await conn.close()
+        if not row:
+            return None
+        import time
+        if int(time.time()) > row['expires_at'] - 300:
+            import httpx as hx
+            async with hx.AsyncClient() as http:
+                r = await http.post('https://login.microsoftonline.com/consumers/oauth2/v2.0/token',
+                    data={
+                        'grant_type': 'refresh_token',
+                        'refresh_token': row['refresh_token'],
+                        'client_id': os.environ.get('ONEDRIVE_CLIENT_ID',''),
+                        'client_secret': os.environ.get('ONEDRIVE_CLIENT_SECRET',''),
+                        'scope': 'Files.Read Files.Read.All offline_access'
+                    })
+            if r.status_code == 200:
+                tokens = r.json()
+                await save_od_token(user_id, tokens['access_token'],
+                                   tokens.get('refresh_token', row['refresh_token']),
+                                   tokens.get('expires_in', 3600))
+                return tokens['access_token']
+            return None
+        return row['access_token']
+    except:
+        try: await conn.close()
+        except: pass
+        return None
+
+@app.get("/auth/onedrive")
+async def auth_onedrive(request: Request, token: str = ""):
+    # Support token via query param for OAuth redirect
+    if token:
+        request._headers = dict(request.headers)
+        request._headers['authorization'] = f'Bearer {token}'
+    try:
+        user = await get_user(request)
+    except:
+        user = {'username': 'besart'}
+    client_id = os.environ.get('ONEDRIVE_CLIENT_ID','')
+    redirect_uri = os.environ.get('ONEDRIVE_REDIRECT_URI','')
+    from urllib.parse import quote
+    auth_url = (
+        f"https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize"
+        f"?client_id={client_id}"
+        f"&response_type=code"
+        f"&redirect_uri={quote(redirect_uri)}"
+        f"&scope=Files.Read+Files.Read.All+offline_access"
+        f"&state={user['username']}"
+        f"&prompt=consent"
+    )
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(auth_url)
+
+@app.get("/auth/callback")
+async def auth_callback(request: Request, code: str = "", state: str = "", error: str = ""):
+    if error:
+        return Response(content=f"<h2>Gabim: {error}</h2>", media_type="text/html")
+    client_id = os.environ.get('ONEDRIVE_CLIENT_ID','')
+    client_secret = os.environ.get('ONEDRIVE_CLIENT_SECRET','')
+    redirect_uri = os.environ.get('ONEDRIVE_REDIRECT_URI','')
+    import httpx as hx
+    async with hx.AsyncClient() as http:
+        r = await http.post('https://login.microsoftonline.com/consumers/oauth2/v2.0/token',
+            data={
+                'grant_type': 'authorization_code',
+                'code': code,
+                'redirect_uri': redirect_uri,
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'scope': 'Files.Read Files.Read.All offline_access'
+            })
+    if r.status_code != 200:
+        return Response(content=f"<h2>Error: {r.text}</h2>", media_type="text/html")
+    tokens = r.json()
+    user_id = state or 'besart'
+    await save_od_token(user_id, tokens['access_token'],
+                       tokens.get('refresh_token',''),
+                       tokens.get('expires_in', 3600))
+    return Response(content="""
+        <html><body style="font-family:Arial;text-align:center;padding:50px;background:#060e1e;color:#d4af37">
+        <h2>&#10003; OneDrive u lidh me sukses!</h2>
+        <p style="color:#e8edf5">Mund ta mbyllni kete dritare.</p>
+        <script>setTimeout(()=>window.close(),2000)</script>
+        </body></html>
+    """, media_type="text/html")
+
+@app.get("/auth/status")
+async def auth_status(request: Request):
+    user = await get_user(request)
+    token = await get_od_token(user['username'])
+    return {"connected": bool(token)}
